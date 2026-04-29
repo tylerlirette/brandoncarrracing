@@ -1,8 +1,10 @@
 export const INSTAGRAM_URL = "https://www.instagram.com/brandon_carr_racing/";
 
+export type RichTextContent = string | Array<Record<string, unknown>>;
+
 export type FeatureCard = {
   title: string;
-  description: string;
+  description: RichTextContent;
   href: string;
   image: string;
 };
@@ -25,7 +27,7 @@ export type UpcomingEvent = {
 
 export type TeamCard = {
   title: string;
-  description: string;
+  description: RichTextContent;
 };
 
 export type HeroSlide = {
@@ -97,7 +99,7 @@ export const featureCards = [
   {
     title: "About",
     description: "Learn more about Brandon Carr",
-    href: "#profile",
+    href: "#about",
     image: "/images/about.webp",
   },
   {

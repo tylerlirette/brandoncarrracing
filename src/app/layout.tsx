@@ -21,6 +21,9 @@ export const metadata: Metadata = {
   title: "Brandon Carr Racing",
   description:
     "Official home of Brandon Carr — British karting champion, IHRA stock car winner, Keith Kunz midget driver, and Setzer Racing late model competitor on the ARCA / NASCAR development ladder.",
+  icons: {
+    icon: "/favicon.png",
+  },
   openGraph: {
     title: "Brandon Carr Racing",
     description:

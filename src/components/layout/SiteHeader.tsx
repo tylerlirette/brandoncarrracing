@@ -1,14 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
+import { defaultHomeSectionAnchors } from "@/lib/homePage";
 import { INSTAGRAM_URL } from "@/lib/site";
 
 const nav = [
   { label: "Home", href: "/" },
-  { label: "About", href: "#profile" },
-  { label: "Schedule", href: "#highlights" },
-  { label: "Partners", href: "#partners" },
-  { label: "Contact", href: "#partners" },
+  { label: "About", href: `#${defaultHomeSectionAnchors.welcome}` },
+  { label: "Schedule", href: `#${defaultHomeSectionAnchors.highlights}` },
+  { label: "Partners", href: `#${defaultHomeSectionAnchors.partners}` },
 ] as const;
 
 export function SiteHeader() {
@@ -42,7 +42,7 @@ export function SiteHeader() {
             className="text-zinc-500 transition hover:text-brand"
             aria-label="Instagram"
           >
-            <Icon icon="mdi:instagram" className="h-5 w-5" aria-hidden />
+            <Icon icon="mdi:instagram" className="h-5 w-5" aria-hidden suppressHydrationWarning />
           </Link>
         </nav>
         <Link
@@ -52,7 +52,7 @@ export function SiteHeader() {
           className="md:hidden"
           aria-label="Instagram"
         >
-          <Icon icon="mdi:instagram" className="h-6 w-6 text-zinc-700" aria-hidden />
+          <Icon icon="mdi:instagram" className="h-6 w-6 text-zinc-700" aria-hidden suppressHydrationWarning />
         </Link>
       </div>
     </header>

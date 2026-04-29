@@ -63,3 +63,4 @@ npx sanity init
 - This setup keeps your existing layout/components and drives copy and lists from Sanity.
 - Hero and card images use **paths under `/public`** (for example `/images/carousel-1.webp`) unless you add remote image domains in `next.config.ts` for full URLs.
 - You can invite editors to Sanity and they can use Studio without touching the repo.
+- Footer update signups are stored in Sanity as `newsletterLead` documents via `/api/newsletter-signup` (requires `SANITY_API_WRITE_TOKEN` in env).

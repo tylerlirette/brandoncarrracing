@@ -1,5 +1,23 @@
 import { defineArrayMember, defineField, defineType } from "sanity";
 
+const richTextWithLinks = {
+  type: "array",
+  of: [
+    defineArrayMember({
+      type: "block",
+      marks: {
+        annotations: [
+          defineArrayMember({
+            name: "link",
+            type: "object",
+            fields: [defineField({ name: "href", type: "url", title: "URL" })],
+          }),
+        ],
+      },
+    }),
+  ],
+};
+
 export const homePageType = defineType({
   name: "homePage",
   title: "Home Page",
@@ -32,9 +50,21 @@ export const homePageType = defineType({
       ],
     }),
     defineField({ name: "welcomeTitle", title: "Welcome Title", type: "string" }),
-    defineField({ name: "welcomeDescription", title: "Welcome Description", type: "text", rows: 3 }),
+    defineField({
+      name: "welcomeSectionId",
+      title: "Welcome Section ID",
+      type: "string",
+      description: "Anchor id for links (example: about).",
+    }),
+    defineField({ name: "welcomeDescription", title: "Welcome Description", ...richTextWithLinks }),
     defineField({ name: "profileTitle", title: "Profile Title", type: "string" }),
-    defineField({ name: "profileDescription", title: "Profile Description", type: "text", rows: 5 }),
+    defineField({
+      name: "profileSectionId",
+      title: "Profile Section ID",
+      type: "string",
+      description: "Anchor id for links (example: profile).",
+    }),
+    defineField({ name: "profileDescription", title: "Profile Description", ...richTextWithLinks }),
     defineField({
       name: "careerHighlights",
       title: "Career Highlights",
@@ -42,7 +72,13 @@ export const homePageType = defineType({
       of: [defineArrayMember({ type: "string" })],
     }),
     defineField({ name: "teamsTitle", title: "Teams Title", type: "string" }),
-    defineField({ name: "teamsSummary", title: "Teams Summary", type: "text", rows: 3 }),
+    defineField({
+      name: "teamsSectionId",
+      title: "Teams Section ID",
+      type: "string",
+      description: "Anchor id for links (example: teams).",
+    }),
+    defineField({ name: "teamsSummary", title: "Teams Summary", ...richTextWithLinks }),
     defineField({
       name: "teams",
       title: "Team Cards",
@@ -55,8 +91,7 @@ export const homePageType = defineType({
             defineField({
               name: "description",
               title: "Description",
-              type: "text",
-              rows: 3,
+              ...richTextWithLinks,
               validation: (rule) => rule.required(),
             }),
           ],
@@ -72,7 +107,7 @@ export const homePageType = defineType({
           type: "object",
           fields: [
             defineField({ name: "title", title: "Title", type: "string", validation: (rule) => rule.required() }),
-            defineField({ name: "description", title: "Description", type: "string" }),
+            defineField({ name: "description", title: "Description", ...richTextWithLinks }),
             defineField({ name: "href", title: "Link", type: "string", initialValue: "#" }),
             defineField({
               name: "imageAsset",
@@ -90,8 +125,20 @@ export const homePageType = defineType({
         }),
       ],
     }),
+    defineField({
+      name: "featureCardsSectionId",
+      title: "Feature Cards Section ID",
+      type: "string",
+      description: "Anchor id for links (example: feature-cards).",
+    }),
     defineField({ name: "highlightsTitle", title: "Highlights Title", type: "string" }),
-    defineField({ name: "highlightsDescription", title: "Highlights Description", type: "text", rows: 2 }),
+    defineField({
+      name: "highlightsSectionId",
+      title: "Highlights Section ID",
+      type: "string",
+      description: "Anchor id for links (example: highlights).",
+    }),
+    defineField({ name: "highlightsDescription", title: "Highlights Description", ...richTextWithLinks }),
     defineField({
       name: "events",
       title: "Racing Highlights",
@@ -121,7 +168,13 @@ export const homePageType = defineType({
       ],
     }),
     defineField({ name: "newsTitle", title: "News Title", type: "string" }),
-    defineField({ name: "newsDescription", title: "News Description", type: "text", rows: 2 }),
+    defineField({
+      name: "newsSectionId",
+      title: "News Section ID",
+      type: "string",
+      description: "Anchor id for links (example: news).",
+    }),
+    defineField({ name: "newsDescription", title: "News Description", ...richTextWithLinks }),
     defineField({
       name: "pressArticles",
       title: "Press Articles",
@@ -140,9 +193,21 @@ export const homePageType = defineType({
       ],
     }),
     defineField({ name: "partnersTitle", title: "Partners Title", type: "string" }),
-    defineField({ name: "partnersDescription", title: "Partners Description", type: "text", rows: 4 }),
+    defineField({
+      name: "partnersSectionId",
+      title: "Partners Section ID",
+      type: "string",
+      description: "Anchor id for links (example: partners).",
+    }),
+    defineField({ name: "partnersDescription", title: "Partners Description", ...richTextWithLinks }),
     defineField({ name: "instagramHeading", title: "Instagram Heading", type: "string" }),
-    defineField({ name: "instagramDescription", title: "Instagram Description", type: "text", rows: 3 }),
+    defineField({
+      name: "instagramSectionId",
+      title: "Instagram Section ID",
+      type: "string",
+      description: "Anchor id for links (example: instagram).",
+    }),
+    defineField({ name: "instagramDescription", title: "Instagram Description", ...richTextWithLinks }),
     defineField({ name: "instagramUrl", title: "Instagram URL", type: "url" }),
     defineField({
       name: "sectionOrder",

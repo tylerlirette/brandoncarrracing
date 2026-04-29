@@ -7,11 +7,14 @@ export const homePageQuery = groq`
       "src": coalesce(imageAsset.asset->url, src)
     },
     welcomeTitle,
+    welcomeSectionId,
     welcomeDescription,
     profileTitle,
+    profileSectionId,
     profileDescription,
     careerHighlights,
     teamsTitle,
+    teamsSectionId,
     teamsSummary,
     teams,
     featureCards[]{
@@ -20,7 +23,9 @@ export const homePageQuery = groq`
       href,
       "image": coalesce(imageAsset.asset->url, image)
     },
+    featureCardsSectionId,
     highlightsTitle,
+    highlightsSectionId,
     highlightsDescription,
     events[]{
       title,
@@ -30,11 +35,14 @@ export const homePageQuery = groq`
       "image": coalesce(imageAsset.asset->url, image)
     },
     newsTitle,
+    newsSectionId,
     newsDescription,
     pressArticles,
     partnersTitle,
+    partnersSectionId,
     partnersDescription,
     instagramHeading,
+    instagramSectionId,
     instagramDescription,
     instagramUrl,
     sectionOrder

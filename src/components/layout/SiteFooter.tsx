@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
 import { INSTAGRAM_URL } from "@/lib/site";
+import { NewsletterForm } from "./NewsletterForm";
 
 export function SiteFooter() {
   return (
@@ -28,22 +29,19 @@ export function SiteFooter() {
             className="mt-3 inline-flex text-zinc-300 transition hover:text-white"
           >
             <span className="sr-only">Instagram</span>
-            <Icon icon="mdi:instagram" className="h-6 w-6" aria-hidden />
+            <Icon icon="mdi:instagram" className="h-6 w-6" aria-hidden suppressHydrationWarning />
           </Link>
         </div>
         <div>
           <h2 className="font-heading text-sm font-bold uppercase italic tracking-wide text-white">
-            Contact for updates
+            Updates
           </h2>
           <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-            For race schedule updates, partnership opportunities, and appearance requests, email the team.
+            Sign up for race schedule updates, partner news, and appearances.
           </p>
-          <Link
-            href="mailto:info@brandoncarr-racing.co.uk"
-            className="mt-3 inline-flex items-center rounded-sm bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-brand-dark"
-          >
-            info@brandoncarr-racing.co.uk
-          </Link>
+          <div className="mt-3">
+            <NewsletterForm />
+          </div>
         </div>
       </div>
     </footer>

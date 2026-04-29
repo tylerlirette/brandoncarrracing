@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { RichText } from "@/components/content/RichText";
+import type { RichTextContent } from "@/lib/site";
 import { INSTAGRAM_URL } from "@/lib/site";
 
 const gridImages = [
@@ -14,7 +16,7 @@ const gridImages = [
 type InstagramFeedProps = {
   widgetIframeSrc?: string;
   heading?: string;
-  description?: string;
+  description?: RichTextContent;
   instagramUrl?: string;
 };
 
@@ -34,7 +36,7 @@ export function InstagramFeed({
           >
             {heading}
           </h2>
-          <p className="mt-2 text-sm text-zinc-600">{description}</p>
+          <RichText className="mt-2 text-sm text-zinc-600 [&_p+p]:mt-2" value={description} />
         </div>
         <Link
           href={instagramUrl}

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { RichText } from "@/components/content/RichText";
 import { featureCards, type FeatureCard } from "@/lib/site";
 
 type FeatureCardsProps = {
@@ -27,9 +28,10 @@ export function FeatureCards({ cards = featureCards }: FeatureCardsProps) {
             <h3 className="font-heading text-3xl font-bold uppercase italic tracking-tight md:text-4xl">
               {card.title}
             </h3>
-            <p className="mt-2 max-w-xs text-sm font-medium italic text-white/90 opacity-0 transition duration-300 group-hover:opacity-100">
-              {card.description}
-            </p>
+            <RichText
+              className="mt-2 max-w-xs text-sm font-medium italic text-white/90 opacity-0 transition duration-300 group-hover:opacity-100 [&_p+p]:mt-2"
+              value={card.description}
+            />
             <span className="mt-4 inline-flex w-fit items-center bg-white px-4 py-2 text-xs font-bold uppercase tracking-widest text-brand opacity-0 transition duration-300 group-hover:opacity-100">
               Learn more
             </span>
