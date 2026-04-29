@@ -200,29 +200,28 @@ function normalizeHeaderLinks(incoming: HeaderLink[] | undefined, defaults: Head
     return [...defaults];
   }
 
-  const merged = incoming
-    .map((link, index) => {
+  const merged: HeaderLink[] = [];
+  incoming.forEach((link, index) => {
       const fallback = defaults[index];
       const label = link.label?.trim() || fallback?.label || "";
       const icon = link.icon?.trim() || fallback?.icon || "";
       const href = link.href?.trim() || fallback?.href || "";
 
       if (!href) {
-        return null;
+        return;
       }
 
       if (!label && !icon) {
-        return null;
+        return;
       }
 
-      return {
+      merged.push({
         label: label || undefined,
         icon: icon || undefined,
         href,
         openInNewTab: Boolean(link.openInNewTab ?? fallback?.openInNewTab),
-      };
-    })
-    .filter((link): link is HeaderLink => Boolean(link));
+      });
+    });
 
   return merged.length ? merged : [...defaults];
 }
