@@ -125,7 +125,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader links={content.headerLinks} />
       <main className="flex-1">
         {content.sectionOrder.map((section) => {
           const sectionNode = sections[section];

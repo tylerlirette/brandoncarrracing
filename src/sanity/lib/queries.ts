@@ -45,6 +45,7 @@ export const homePageQuery = groq`
     instagramSectionId,
     instagramDescription,
     instagramUrl,
+    headerLinks,
     sectionOrder
   }
 `;

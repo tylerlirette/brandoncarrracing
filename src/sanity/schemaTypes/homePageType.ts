@@ -24,6 +24,69 @@ export const homePageType = defineType({
   type: "document",
   fields: [
     defineField({
+      name: "headerLinks",
+      title: "Header Links",
+      type: "array",
+      description: "Controls header navigation. Each link can show text or an Iconify icon.",
+      of: [
+        defineArrayMember({
+          type: "object",
+          fields: [
+            defineField({
+              name: "label",
+              title: "Label (text link)",
+              type: "string",
+              description: "Optional when using Iconify icon only.",
+            }),
+            defineField({
+              name: "icon",
+              title: "Iconify icon name",
+              type: "string",
+              description: "Optional. Example: mdi:instagram",
+            }),
+            defineField({
+              name: "href",
+              title: "Link URL",
+              type: "string",
+              description: "Supports internal paths, #anchors, or full URLs.",
+              validation: (rule) => rule.required(),
+            }),
+            defineField({
+              name: "openInNewTab",
+              title: "Open in new tab",
+              type: "boolean",
+              initialValue: false,
+            }),
+          ],
+          preview: {
+            select: {
+              label: "label",
+              icon: "icon",
+              href: "href",
+            },
+            prepare({ label, icon, href }) {
+              return {
+                title: label || icon || "Header link",
+                subtitle: href,
+              };
+            },
+          },
+          validation: (rule) =>
+            rule.custom((value) => {
+              if (!value || typeof value !== "object") {
+                return true;
+              }
+              const hasLabel = typeof value.label === "string" && value.label.trim().length > 0;
+              const hasIcon = typeof value.icon === "string" && value.icon.trim().length > 0;
+              if (!hasLabel && !hasIcon) {
+                return "Provide either a text label or an Iconify icon name.";
+              }
+              return true;
+            }),
+        }),
+      ],
+    }),
+    defineField({
       name: "heroSlides",
       title: "Hero carousel slides",
       type: "array",

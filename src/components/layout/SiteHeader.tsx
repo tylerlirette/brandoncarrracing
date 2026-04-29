@@ -1,17 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Icon } from "@iconify/react";
-import { defaultHomeSectionAnchors } from "@/lib/homePage";
-import { INSTAGRAM_URL } from "@/lib/site";
+import type { HeaderLink } from "@/lib/homePage";
 
-const nav = [
-  { label: "Home", href: "/" },
-  { label: "About", href: `#${defaultHomeSectionAnchors.welcome}` },
-  { label: "Schedule", href: `#${defaultHomeSectionAnchors.highlights}` },
-  { label: "Partners", href: `#${defaultHomeSectionAnchors.partners}` },
-] as const;
+type SiteHeaderProps = {
+  links: HeaderLink[];
+};
 
-export function SiteHeader() {
+function isExternalHref(href: string): boolean {
+  return /^https?:\/\//i.test(href);
+}
+
+export function SiteHeader({ links }: SiteHeaderProps) {
+  const mobileIconLinks = links.filter((link) => Boolean(link.icon)).slice(0, 1);
+
   return (
     <header className="sticky top-0 z-50 border-b border-zinc-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 md:py-4">
@@ -26,34 +28,39 @@ export function SiteHeader() {
           />
         </Link>
         <nav className="hidden items-center gap-6 text-xs font-bold uppercase tracking-wide text-zinc-800 md:flex">
-          {nav.map((item) => (
+          {links.map((item) => (
             <Link
               key={item.href + item.label}
               href={item.href}
-              className={`transition hover:text-brand ${item.label === "Home" ? "text-brand" : ""}`}
+              target={item.openInNewTab || isExternalHref(item.href) ? "_blank" : undefined}
+              rel={item.openInNewTab || isExternalHref(item.href) ? "noopener noreferrer" : undefined}
+              aria-label={item.label || item.icon || "Navigation link"}
+              className={`transition hover:text-brand ${item.label === "Home" ? "text-brand" : "text-zinc-800"}`}
             >
-              {item.label}
+              {item.icon ? (
+                <Icon icon={item.icon} className="h-5 w-5" aria-hidden suppressHydrationWarning />
+              ) : (
+                item.label
+              )}
             </Link>
           ))}
-          <Link
-            href={INSTAGRAM_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-zinc-500 transition hover:text-brand"
-            aria-label="Instagram"
-          >
-            <Icon icon="mdi:instagram" className="h-5 w-5" aria-hidden suppressHydrationWarning />
-          </Link>
         </nav>
-        <Link
-          href={INSTAGRAM_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="md:hidden"
-          aria-label="Instagram"
-        >
-          <Icon icon="mdi:instagram" className="h-6 w-6 text-zinc-700" aria-hidden suppressHydrationWarning />
-        </Link>
+        {mobileIconLinks.length ? (
+          <Link
+            href={mobileIconLinks[0].href}
+            target={mobileIconLinks[0].openInNewTab || isExternalHref(mobileIconLinks[0].href) ? "_blank" : undefined}
+            rel={mobileIconLinks[0].openInNewTab || isExternalHref(mobileIconLinks[0].href) ? "noopener noreferrer" : undefined}
+            className="md:hidden"
+            aria-label={mobileIconLinks[0].label || mobileIconLinks[0].icon || "Navigation link"}
+          >
+            <Icon
+              icon={mobileIconLinks[0].icon || "mdi:link"}
+              className="h-6 w-6 text-zinc-700"
+              aria-hidden
+              suppressHydrationWarning
+            />
+          </Link>
+        ) : null}
       </div>
     </header>
   );

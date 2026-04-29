@@ -139,6 +139,7 @@ function dedupeSectionOrder(order: string[] | undefined): string[] {
 }
 
 export type HomePageContent = {
+  headerLinks: HeaderLink[];
   heroSlides: HeroSlide[];
   welcomeTitle: string;
   welcomeSectionId: string;
@@ -171,7 +172,70 @@ export type HomePageContent = {
   sectionOrder: string[];
 };
 
+export type HeaderLink = {
+  label?: string;
+  icon?: string;
+  href: string;
+  openInNewTab?: boolean;
+};
+
+type HeaderLinkAnchors = {
+  welcome: string;
+  highlights: string;
+  partners: string;
+};
+
+function buildDefaultHeaderLinks(anchors: HeaderLinkAnchors, instagramUrl: string): HeaderLink[] {
+  return [
+    { label: "Home", href: "/" },
+    { label: "About", href: `#${anchors.welcome}` },
+    { label: "Schedule", href: `#${anchors.highlights}` },
+    { label: "Partners", href: `#${anchors.partners}` },
+    { icon: "mdi:instagram", href: instagramUrl, openInNewTab: true },
+  ];
+}
+
+function normalizeHeaderLinks(incoming: HeaderLink[] | undefined, defaults: HeaderLink[]): HeaderLink[] {
+  if (!incoming?.length) {
+    return [...defaults];
+  }
+
+  const merged = incoming
+    .map((link, index) => {
+      const fallback = defaults[index];
+      const label = link.label?.trim() || fallback?.label || "";
+      const icon = link.icon?.trim() || fallback?.icon || "";
+      const href = link.href?.trim() || fallback?.href || "";
+
+      if (!href) {
+        return null;
+      }
+
+      if (!label && !icon) {
+        return null;
+      }
+
+      return {
+        label: label || undefined,
+        icon: icon || undefined,
+        href,
+        openInNewTab: Boolean(link.openInNewTab ?? fallback?.openInNewTab),
+      };
+    })
+    .filter((link): link is HeaderLink => Boolean(link));
+
+  return merged.length ? merged : [...defaults];
+}
+
 export const defaultHomePageContent: HomePageContent = {
+  headerLinks: buildDefaultHeaderLinks(
+    {
+      welcome: "about",
+      highlights: "highlights",
+      partners: "partners",
+    },
+    INSTAGRAM_URL
+  ),
   heroSlides: [...heroSlides],
   welcomeTitle: "Welcome to Brandon Carr Racing",
   welcomeSectionId: "about",
@@ -229,9 +293,17 @@ export function mergeHomePageContent(content?: Partial<HomePageContent> | null):
     return defaultHomePageContent;
   }
 
+  const resolvedAnchors: HeaderLinkAnchors = {
+    welcome: content.welcomeSectionId || defaultHomePageContent.welcomeSectionId,
+    highlights: content.highlightsSectionId || defaultHomePageContent.highlightsSectionId,
+    partners: content.partnersSectionId || defaultHomePageContent.partnersSectionId,
+  };
+  const resolvedInstagramUrl = content.instagramUrl || defaultHomePageContent.instagramUrl;
+
   return {
     ...defaultHomePageContent,
     ...content,
+    headerLinks: normalizeHeaderLinks(content.headerLinks, buildDefaultHeaderLinks(resolvedAnchors, resolvedInstagramUrl)),
     heroSlides: normalizeHeroSlides(content.heroSlides, defaultHomePageContent.heroSlides),
     careerHighlights: content.careerHighlights?.length ? content.careerHighlights : defaultHomePageContent.careerHighlights,
     teams: normalizeTeams(content.teams, defaultHomePageContent.teams),
