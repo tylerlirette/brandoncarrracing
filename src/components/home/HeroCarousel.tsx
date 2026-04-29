@@ -1,32 +1,37 @@
 "use client";
 
+import { heroSlides, type HeroSlide } from "@/lib/site";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 
-const slides = [
-  { src: "/images/carousel-1.webp", alt: "Brandon Carr racing late models on track" },
-  { src: "/images/carousel-2.webp", alt: "Race car on track under lights" },
-  { src: "/images/carousel-3.webp", alt: "Short track racing action" },
-  { src: "/images/carousel-4.webp", alt: "Stock car field at speed" },
-] as const;
+type HeroCarouselProps = {
+  slides?: HeroSlide[];
+};
 
-export function HeroCarousel() {
+export function HeroCarousel({ slides = heroSlides }: HeroCarouselProps) {
   const [index, setIndex] = useState(0);
 
   const next = useCallback(() => {
-    setIndex((i) => (i + 1) % slides.length);
-  }, []);
+    setIndex((i) => {
+      const len = slides.length || 1;
+      return (i + 1) % len;
+    });
+  }, [slides.length]);
 
   useEffect(() => {
     const id = window.setInterval(next, 6500);
     return () => window.clearInterval(id);
   }, [next]);
 
+  if (!slides.length) {
+    return null;
+  }
+
   return (
     <div className="relative aspect-[21/9] min-h-[220px] w-full max-h-[min(70vh,720px)] overflow-hidden bg-black md:aspect-[3/1]">
       {slides.map((slide, i) => (
         <div
-          key={slide.src}
+          key={`${slide.src}-${i}`}
           className={`absolute inset-0 transition-opacity duration-700 ease-out ${
             i === index ? "opacity-100" : "pointer-events-none opacity-0"
           }`}

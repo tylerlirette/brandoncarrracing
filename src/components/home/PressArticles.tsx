@@ -1,10 +1,14 @@
 import Link from "next/link";
-import { pressArticles } from "@/lib/site";
+import { pressArticles, type PressArticle } from "@/lib/site";
 
-export function PressArticles() {
+type PressArticlesProps = {
+  articles?: PressArticle[];
+};
+
+export function PressArticles({ articles = pressArticles }: PressArticlesProps) {
   return (
     <div className="mx-auto grid max-w-6xl gap-6 px-4 md:grid-cols-2">
-      {pressArticles.map((article) => (
+      {articles.map((article) => (
         <article
           key={article.href}
           className="flex flex-col rounded-sm border border-zinc-200 bg-white p-6 shadow-sm transition hover:border-brand/40 hover:shadow-md"

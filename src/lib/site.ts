@@ -1,5 +1,45 @@
 export const INSTAGRAM_URL = "https://www.instagram.com/brandon_carr_racing/";
 
+export type FeatureCard = {
+  title: string;
+  description: string;
+  href: string;
+  image: string;
+};
+
+export type PressArticle = {
+  title: string;
+  source: string;
+  date: string;
+  excerpt: string;
+  href: string;
+};
+
+export type UpcomingEvent = {
+  title: string;
+  subtitle: string;
+  date: string;
+  image: string;
+  note: string;
+};
+
+export type TeamCard = {
+  title: string;
+  description: string;
+};
+
+export type HeroSlide = {
+  src: string;
+  alt: string;
+};
+
+export const heroSlides = [
+  { src: "/images/carousel-1.webp", alt: "Brandon Carr racing late models on track" },
+  { src: "/images/carousel-2.webp", alt: "Race car on track under lights" },
+  { src: "/images/carousel-3.webp", alt: "Short track racing action" },
+  { src: "/images/carousel-4.webp", alt: "Stock car field at speed" },
+] satisfies HeroSlide[];
+
 export const pressArticles = [
   {
     title: "Dudley, Carr make history with IHRA Stock Car victories",
@@ -17,7 +57,7 @@ export const pressArticles = [
       "The British karting champion moved from UK pavement to US dirt ovals with Keith Kunz/Curb-Agajanian Motorsports, chasing Rookie of the Year with the Xtreme Outlaw Midget Series.",
     href: "https://speedwaydigest.com/index.php/news/racing-news/413469-brandon-carr-taking-karting-experience-to-xtreme-outlaw-midgets-rookie-season/",
   },
-] as const;
+] satisfies PressArticle[];
 
 export const careerHighlights = [
   "British Karting Champion",
@@ -27,7 +67,7 @@ export const careerHighlights = [
   "Late Model Stock Car winner — Setzer Racing",
   "Multiple Midget A-Main starts with Keith Kunz Motorsports",
   "National-level competition in karting, midgets, and late models",
-] as const;
+] as string[];
 
 export const upcomingEvents = [
   {
@@ -51,4 +91,36 @@ export const upcomingEvents = [
     image: "/images/orange-county.webp",
     note: "Part of the progression toward national NASCAR divisions.",
   },
-] as const;
+] satisfies UpcomingEvent[];
+
+export const featureCards = [
+  {
+    title: "About",
+    description: "Learn more about Brandon Carr",
+    href: "#profile",
+    image: "/images/about.webp",
+  },
+  {
+    title: "Teams & series",
+    description: "Keith Kunz midgets & Setzer late models",
+    href: "#teams",
+    image: "/images/series.webp",
+  },
+  {
+    title: "Partners",
+    description: "Sponsorship and hospitality opportunities",
+    href: "#partners",
+    image: "/images/shop.webp",
+  },
+] satisfies FeatureCard[];
+
+export const teamCards = [
+  {
+    title: "Keith Kunz Motorsports",
+    description: "National midget competition — A-Mains and feature events across the US.",
+  },
+  {
+    title: "Setzer Racing & Development",
+    description: "Late model stock car races on Southeast short tracks, including the IHRA Stock Car Series.",
+  },
+] satisfies TeamCard[];

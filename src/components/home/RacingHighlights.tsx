@@ -1,10 +1,14 @@
 import Image from "next/image";
-import { upcomingEvents } from "@/lib/site";
+import { upcomingEvents, type UpcomingEvent } from "@/lib/site";
 
-export function RacingHighlights() {
+type RacingHighlightsProps = {
+  events?: UpcomingEvent[];
+};
+
+export function RacingHighlights({ events = upcomingEvents }: RacingHighlightsProps) {
   return (
     <div className="mx-auto grid max-w-6xl gap-6 px-4 sm:grid-cols-2 lg:grid-cols-3">
-      {upcomingEvents.map((event) => (
+      {events.map((event) => (
         <article
           key={event.title}
           className="flex flex-col overflow-hidden rounded-sm bg-white shadow ring-1 ring-black/5"

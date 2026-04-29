@@ -1,28 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import { featureCards, type FeatureCard } from "@/lib/site";
 
-const cards = [
-  {
-    title: "About",
-    description: "Learn more about Brandon Carr",
-    href: "#profile",
-    image: "/images/about.webp",
-  },
-  {
-    title: "Teams & series",
-    description: "Keith Kunz midgets & Setzer late models",
-    href: "#teams",
-    image: "/images/series.webp",
-  },
-  {
-    title: "Partners",
-    description: "Sponsorship and hospitality opportunities",
-    href: "#partners",
-    image: "/images/shop.webp",
-  },
-] as const;
+type FeatureCardsProps = {
+  cards?: FeatureCard[];
+};
 
-export function FeatureCards() {
+export function FeatureCards({ cards = featureCards }: FeatureCardsProps) {
   return (
     <div className="mx-auto grid max-w-6xl gap-5 px-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
       {cards.map((card) => (

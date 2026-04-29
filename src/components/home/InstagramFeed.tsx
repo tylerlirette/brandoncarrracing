@@ -13,9 +13,17 @@ const gridImages = [
 
 type InstagramFeedProps = {
   widgetIframeSrc?: string;
+  heading?: string;
+  description?: string;
+  instagramUrl?: string;
 };
 
-export function InstagramFeed({ widgetIframeSrc }: InstagramFeedProps) {
+export function InstagramFeed({
+  widgetIframeSrc,
+  heading = "Latest from Instagram",
+  description = "Follow @brandon_carr_racing for news, behind-the-scenes, and weekend updates.",
+  instagramUrl = INSTAGRAM_URL,
+}: InstagramFeedProps) {
   return (
     <section className="mx-auto max-w-6xl px-4" aria-labelledby="instagram-heading">
       <div className="flex flex-col gap-2 text-center md:flex-row md:items-end md:justify-between md:text-left">
@@ -24,18 +32,12 @@ export function InstagramFeed({ widgetIframeSrc }: InstagramFeedProps) {
             id="instagram-heading"
             className="font-heading text-3xl font-bold uppercase italic tracking-tight text-zinc-900 md:text-4xl"
           >
-            Latest from Instagram
+            {heading}
           </h2>
-          <p className="mt-2 text-sm text-zinc-600">
-            Follow{" "}
-            <Link href={INSTAGRAM_URL} className="font-semibold text-brand hover:underline" target="_blank" rel="noopener noreferrer">
-              @brandon_carr_racing
-            </Link>{" "}
-            for news, behind-the-scenes, and weekend updates.
-          </p>
+          <p className="mt-2 text-sm text-zinc-600">{description}</p>
         </div>
         <Link
-          href={INSTAGRAM_URL}
+          href={instagramUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex shrink-0 items-center justify-center self-center rounded-sm bg-brand px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-brand-dark md:self-auto"
@@ -75,7 +77,7 @@ export function InstagramFeed({ widgetIframeSrc }: InstagramFeedProps) {
             {gridImages.map((src, i) => (
               <Link
                 key={src}
-                href={INSTAGRAM_URL}
+                href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group relative aspect-square overflow-hidden rounded-sm bg-zinc-200 ring-1 ring-black/5"
