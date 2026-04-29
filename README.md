@@ -52,6 +52,12 @@ npx sanity init
 
 6. Reorder **Homepage Section Order** to change which blocks appear and in what order.
 
+## Images in Sanity
+
+- Hero slides, feature cards, and racing highlights support **uploaded images** from the Sanity Media Library.
+- Those same fields also keep a **fallback path/URL** (for example `/images/about.webp`) so existing repo images continue to work.
+- The site automatically prefers uploaded Sanity assets when present.
+
 ## Notes
 
 - This setup keeps your existing layout/components and drives copy and lists from Sanity.
