@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Icon } from "@iconify/react";
 import { INSTAGRAM_URL } from "@/lib/site";
 
 const nav = [
@@ -41,7 +42,7 @@ export function SiteHeader() {
             className="text-zinc-500 transition hover:text-brand"
             aria-label="Instagram"
           >
-            <InstagramGlyph className="h-5 w-5" />
+            <Icon icon="mdi:instagram" className="h-5 w-5" aria-hidden />
           </Link>
         </nav>
         <Link
@@ -51,17 +52,9 @@ export function SiteHeader() {
           className="md:hidden"
           aria-label="Instagram"
         >
-          <InstagramGlyph className="h-6 w-6 text-zinc-700" />
+          <Icon icon="mdi:instagram" className="h-6 w-6 text-zinc-700" aria-hidden />
         </Link>
       </div>
     </header>
-  );
-}
-
-function InstagramGlyph({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm0 2a3 3 0 00-3 3v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7zm5 3.5A4.5 4.5 0 1112 16a4.5 4.5 0 01-4.5-4.5zm0 2A2.5 2.5 0 1012 9a2.5 2.5 0 00-2.5 2.5zm5.75-3.25a1 1 0 11-2 0 1 1 0 012 0z" />
-    </svg>
   );
 }

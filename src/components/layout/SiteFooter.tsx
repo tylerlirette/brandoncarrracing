@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Icon } from "@iconify/react";
 import { INSTAGRAM_URL } from "@/lib/site";
-import { NewsletterForm } from "./NewsletterForm";
 
 export function SiteFooter() {
   return (
@@ -28,19 +28,22 @@ export function SiteFooter() {
             className="mt-3 inline-flex text-zinc-300 transition hover:text-white"
           >
             <span className="sr-only">Instagram</span>
-            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-              <path d="M7 2h10a5 5 0 015 5v10a5 5 0 01-5 5H7a5 5 0 01-5-5V7a5 5 0 015-5zm0 2a3 3 0 00-3 3v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7zm5 3.5A4.5 4.5 0 1112 16a4.5 4.5 0 01-4.5-4.5zm0 2A2.5 2.5 0 1012 9a2.5 2.5 0 00-2.5 2.5zm5.75-3.25a1 1 0 11-2 0 1 1 0 012 0z" />
-            </svg>
+            <Icon icon="mdi:instagram" className="h-6 w-6" aria-hidden />
           </Link>
         </div>
         <div>
           <h2 className="font-heading text-sm font-bold uppercase italic tracking-wide text-white">
-            Newsletter
+            Contact for updates
           </h2>
-          <p className="mt-2 text-xs text-zinc-400">Sign up for updates on races, partners, and appearances.</p>
-          <div className="mt-3">
-            <NewsletterForm />
-          </div>
+          <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+            For race schedule updates, partnership opportunities, and appearance requests, email the team.
+          </p>
+          <Link
+            href="mailto:info@brandoncarr-racing.co.uk"
+            className="mt-3 inline-flex items-center rounded-sm bg-brand px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-brand-dark"
+          >
+            info@brandoncarr-racing.co.uk
+          </Link>
         </div>
       </div>
     </footer>
