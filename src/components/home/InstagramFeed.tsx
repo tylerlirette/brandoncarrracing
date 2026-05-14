@@ -1,8 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
+import Script from "next/script";
 import { RichText } from "@/components/content/RichText";
 import type { RichTextContent } from "@/lib/site";
 import { INSTAGRAM_URL } from "@/lib/site";
+
+function widgetIframeAbsoluteSrc(src: string): string {
+  return src.startsWith("//") ? `https:${src}` : src;
+}
 
 const gridImages = [
   "/images/ig-grid-1.jpg",
@@ -49,18 +54,25 @@ export function InstagramFeed({
       </div>
 
       {widgetIframeSrc ? (
-        <div className="mt-8 overflow-hidden rounded-sm bg-white shadow ring-1 ring-black/5">
-          <iframe
-            title="Instagram feed"
-            src={widgetIframeSrc}
-            className="h-[540px] w-full border-0"
-            loading="lazy"
+        <>
+          <Script
+            src="https://cdn.lightwidget.com/widgets/lightwidget.js"
+            strategy="lazyOnload"
           />
-        </div>
+          <div className="mt-8 overflow-hidden rounded-sm bg-white shadow ring-1 ring-black/5">
+            <iframe
+              title="Instagram feed"
+              src={widgetIframeAbsoluteSrc(widgetIframeSrc)}
+              className="h-[540px] w-full border-0"
+              loading="lazy"
+              scrolling="no"
+            />
+          </div>
+        </>
       ) : (
         <div className="mt-8">
           <p className="mb-4 rounded-sm bg-zinc-100 px-4 py-3 text-center text-xs text-zinc-600">
-            For a live embedded grid, add a widget iframe URL (for example from{" "}
+            No widget URL is configured. Add one from{" "}
             <a
               href="https://lightwidget.com/"
               className="font-semibold text-brand underline-offset-2 hover:underline"
@@ -68,12 +80,16 @@ export function InstagramFeed({
               rel="noopener noreferrer"
             >
               LightWidget
-            </a>
-            ) to{" "}
+            </a>{" "}
+            via{" "}
             <code className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-zinc-800 ring-1 ring-zinc-200">
               NEXT_PUBLIC_INSTAGRAM_WIDGET_IFRAME_SRC
             </code>{" "}
-            in your environment. Until then, tap any photo to open Instagram.
+            or the default in{" "}
+            <code className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-zinc-800 ring-1 ring-zinc-200">
+              INSTAGRAM_LIGHTWIDGET_IFRAME_SRC
+            </code>
+            . Tap any photo to open Instagram.
           </p>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:gap-3">
             {gridImages.map((src, i) => (

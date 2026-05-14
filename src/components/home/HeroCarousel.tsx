@@ -28,7 +28,7 @@ export function HeroCarousel({ slides = heroSlides }: HeroCarouselProps) {
   }
 
   return (
-    <div className="relative aspect-[21/9] min-h-[220px] w-full max-h-[min(70vh,720px)] overflow-hidden bg-black md:aspect-[3/1]">
+    <div className="relative aspect-21/9 min-h-64 w-full max-h-[min(80vh,860px)] overflow-hidden bg-black md:aspect-5/2">
       {slides.map((slide, i) => (
         <div
           key={`${slide.src}-${i}`}
@@ -48,7 +48,7 @@ export function HeroCarousel({ slides = heroSlides }: HeroCarouselProps) {
         </div>
       ))}
       <div
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"
+        className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent"
         aria-hidden
       />
       <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
@@ -58,8 +58,10 @@ export function HeroCarousel({ slides = heroSlides }: HeroCarouselProps) {
             type="button"
             aria-label={`Show slide ${i + 1}`}
             onClick={() => setIndex(i)}
-            className={`h-2.5 w-2.5 rounded-full border border-white/70 transition ${
-              i === index ? "bg-brand scale-110" : "bg-white/40 hover:bg-white/70"
+            className={`h-2.5 w-2.5 rounded-full hover:cursor-pointer border border-white/70 transition ${
+              i === index
+                ? "bg-brand scale-110"
+                : "bg-white/40 hover:bg-white/70"
             }`}
           />
         ))}

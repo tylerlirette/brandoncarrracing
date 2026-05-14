@@ -1,5 +1,9 @@
 export const INSTAGRAM_URL = "https://www.instagram.com/brandon_carr_racing/";
 
+/** Default LightWidget embed; override with `NEXT_PUBLIC_INSTAGRAM_WIDGET_IFRAME_SRC` if the widget URL changes. */
+export const INSTAGRAM_LIGHTWIDGET_IFRAME_SRC =
+  "https://lightwidget.com/widgets/18d6e7d7623b550f9276c538012a0565.html";
+
 export type RichTextContent = string | Array<Record<string, unknown>>;
 
 export type FeatureCard = {

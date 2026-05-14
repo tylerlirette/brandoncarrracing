@@ -7,6 +7,7 @@ import { RichText } from "@/components/content/RichText";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { mergeHomePageContent } from "@/lib/homePage";
+import { INSTAGRAM_LIGHTWIDGET_IFRAME_SRC } from "@/lib/site";
 import { client } from "@/sanity/lib/client";
 import { homePageQuery } from "@/sanity/lib/queries";
 import type { ReactNode } from "react";
@@ -24,7 +25,8 @@ async function getHomePageContent() {
 }
 
 export default async function HomePage() {
-  const instagramWidgetSrc = process.env.NEXT_PUBLIC_INSTAGRAM_WIDGET_IFRAME_SRC;
+  const instagramWidgetSrc =
+    process.env.NEXT_PUBLIC_INSTAGRAM_WIDGET_IFRAME_SRC ?? INSTAGRAM_LIGHTWIDGET_IFRAME_SRC;
   const content = await getHomePageContent();
 
   const sections: Record<string, ReactNode> = {
