@@ -4,6 +4,8 @@ import Script from "next/script";
 import { RichText } from "@/components/content/RichText";
 import type { RichTextContent } from "@/lib/site";
 import { INSTAGRAM_URL } from "@/lib/site";
+import { siteConfig } from "@/lib/siteConfig";
+import { headingStyles, textStyles } from "@/lib/theme";
 
 function widgetIframeAbsoluteSrc(src: string): string {
   return src.startsWith("//") ? `https:${src}` : src;
@@ -28,26 +30,23 @@ type InstagramFeedProps = {
 export function InstagramFeed({
   widgetIframeSrc,
   heading = "Latest from Instagram",
-  description = "Follow @brandon_carr_racing for news, behind-the-scenes, and weekend updates.",
+  description = `Follow ${siteConfig.name} on Instagram for news and updates.`,
   instagramUrl = INSTAGRAM_URL,
 }: InstagramFeedProps) {
   return (
     <section className="mx-auto max-w-6xl px-4" aria-labelledby="instagram-heading">
       <div className="flex flex-col gap-2 text-center md:flex-row md:items-end md:justify-between md:text-left">
         <div>
-          <h2
-            id="instagram-heading"
-            className="font-heading text-3xl font-bold uppercase italic tracking-tight text-zinc-900 md:text-4xl"
-          >
+          <h2 id="instagram-heading" className={headingStyles.page}>
             {heading}
           </h2>
-          <RichText className="mt-2 text-sm text-zinc-600 [&_p+p]:mt-2" value={description} />
+          <RichText className={`mt-2 ${textStyles.bodyCompact}`} value={description} />
         </div>
         <Link
           href={instagramUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex shrink-0 items-center justify-center self-center rounded-sm bg-brand px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-brand-dark md:self-auto"
+          className="inline-flex shrink-0 items-center justify-center self-center rounded-sm bg-brand px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-brand-secondary md:self-auto"
         >
           Open Instagram
         </Link>
@@ -59,7 +58,7 @@ export function InstagramFeed({
             src="https://cdn.lightwidget.com/widgets/lightwidget.js"
             strategy="lazyOnload"
           />
-          <div className="mt-8 overflow-hidden rounded-sm bg-white shadow ring-1 ring-black/5">
+          <div className="mt-8 overflow-hidden rounded-sm bg-background shadow ring-1 ring-black/5">
             <iframe
               title="Instagram feed"
               src={widgetIframeAbsoluteSrc(widgetIframeSrc)}
@@ -71,7 +70,7 @@ export function InstagramFeed({
         </>
       ) : (
         <div className="mt-8">
-          <p className="mb-4 rounded-sm bg-zinc-100 px-4 py-3 text-center text-xs text-zinc-600">
+          <p className={`mb-4 rounded-sm bg-surface-subtle px-4 py-3 text-center text-xs text-muted`}>
             No widget URL is configured. Add one from{" "}
             <a
               href="https://lightwidget.com/"
@@ -82,11 +81,11 @@ export function InstagramFeed({
               LightWidget
             </a>{" "}
             via{" "}
-            <code className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-zinc-800 ring-1 ring-zinc-200">
+            <code className="rounded bg-background px-1 py-0.5 font-mono text-[11px] text-foreground ring-1 ring-border">
               NEXT_PUBLIC_INSTAGRAM_WIDGET_IFRAME_SRC
             </code>{" "}
             or the default in{" "}
-            <code className="rounded bg-white px-1 py-0.5 font-mono text-[11px] text-zinc-800 ring-1 ring-zinc-200">
+            <code className="rounded bg-background px-1 py-0.5 font-mono text-[11px] text-foreground ring-1 ring-border">
               INSTAGRAM_LIGHTWIDGET_IFRAME_SRC
             </code>
             . Tap any photo to open Instagram.
@@ -98,11 +97,11 @@ export function InstagramFeed({
                 href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative aspect-square overflow-hidden rounded-sm bg-zinc-200 ring-1 ring-black/5"
+                className="group relative aspect-square overflow-hidden rounded-sm bg-surface-subtle ring-1 ring-black/5"
               >
                 <Image
                   src={src}
-                  alt={`Racing photo ${i + 1}`}
+                  alt={`Gallery photo ${i + 1}`}
                   fill
                   className="object-cover transition duration-300 group-hover:scale-105"
                   sizes="(max-width:640px) 50vw, 33vw"

@@ -1,8 +1,9 @@
-export const INSTAGRAM_URL = "https://www.instagram.com/brandon_carr_racing/";
+import { siteConfig } from "@/lib/siteConfig";
+
+export const INSTAGRAM_URL = siteConfig.social.instagram;
 
 /** Default LightWidget embed; override with `NEXT_PUBLIC_INSTAGRAM_WIDGET_IFRAME_SRC` if the widget URL changes. */
-export const INSTAGRAM_LIGHTWIDGET_IFRAME_SRC =
-  "https://lightwidget.com/widgets/18d6e7d7623b550f9276c538012a0565.html";
+export const INSTAGRAM_LIGHTWIDGET_IFRAME_SRC = siteConfig.instagramWidget.defaultIframeSrc;
 
 export type RichTextContent = string | Array<Record<string, unknown>>;
 
@@ -21,7 +22,7 @@ export type PressArticle = {
   href: string;
 };
 
-export type UpcomingEvent = {
+export type EventCard = {
   title: string;
   subtitle: string;
   date: string;
@@ -29,7 +30,7 @@ export type UpcomingEvent = {
   note: string;
 };
 
-export type TeamCard = {
+export type InfoCard = {
   title: string;
   description: RichTextContent;
 };
@@ -65,7 +66,7 @@ export const pressArticles = [
   },
 ] satisfies PressArticle[];
 
-export const careerHighlights = [
+export const defaultProfileBullets = [
   "British Karting Champion",
   "British Kartmasters Champion",
   "POWRi Midget feature winner",
@@ -75,7 +76,7 @@ export const careerHighlights = [
   "National-level competition in karting, midgets, and late models",
 ] as string[];
 
-export const upcomingEvents = [
+export const defaultEventCards = [
   {
     title: "IHRA Stock Car Series",
     subtitle: "Cordele Speedway — South Georgia",
@@ -97,7 +98,7 @@ export const upcomingEvents = [
     image: "/images/orange-county.webp",
     note: "Part of the progression toward national NASCAR divisions.",
   },
-] satisfies UpcomingEvent[];
+] satisfies EventCard[];
 
 export const featureCards = [
   {
@@ -120,7 +121,7 @@ export const featureCards = [
   },
 ] satisfies FeatureCard[];
 
-export const teamCards = [
+export const defaultInfoCards = [
   {
     title: "Keith Kunz Motorsports",
     description: "National midget competition — A-Mains and feature events across the US.",
@@ -129,4 +130,4 @@ export const teamCards = [
     title: "Setzer Racing & Development",
     description: "Late model stock car races on Southeast short tracks, including the IHRA Stock Car Series.",
   },
-] satisfies TeamCard[];
+] satisfies InfoCard[];

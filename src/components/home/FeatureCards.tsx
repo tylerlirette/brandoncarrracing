@@ -32,7 +32,7 @@ export function FeatureCards({ cards = featureCards }: FeatureCardsProps) {
               className="mt-2 max-w-xs text-sm font-medium italic text-white/90 opacity-0 transition duration-300 group-hover:opacity-100 [&_p+p]:mt-2"
               value={card.description}
             />
-            <span className="mt-4 inline-flex w-fit items-center bg-white px-4 py-2 text-xs font-bold uppercase tracking-widest text-brand opacity-0 transition duration-300 group-hover:opacity-100">
+            <span className="mt-4 inline-flex w-fit items-center bg-background px-4 py-2 text-xs font-bold uppercase tracking-widest text-brand opacity-0 transition duration-300 group-hover:opacity-100">
               Learn more
             </span>
           </div>

@@ -52,17 +52,17 @@ export function NewsletterForm() {
         disabled={isSubmitting}
         autoComplete="email"
         placeholder="Email address"
-        className="min-w-0 flex-1 border border-white/25 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-zinc-400 focus:border-brand focus:outline-none"
+        className="min-w-0 flex-1 border border-white/25 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-subtle focus:border-brand focus:outline-none"
       />
       <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
       <button
         type="submit"
         disabled={isSubmitting}
-        className="shrink-0 bg-white px-4 py-2 text-sm font-bold uppercase tracking-wide text-zinc-900 transition hover:bg-zinc-100"
+        className="shrink-0 bg-background px-4 py-2 text-sm font-bold uppercase tracking-wide text-foreground transition hover:bg-surface-subtle"
       >
         {isSubmitting ? "Submitting..." : "Sign up"}
       </button>
-      {message ? <p className="basis-full text-xs text-zinc-300 sm:order-last">{message}</p> : null}
+      {message ? <p className="basis-full text-xs text-inverse-subtle sm:order-last">{message}</p> : null}
     </form>
   );
 }

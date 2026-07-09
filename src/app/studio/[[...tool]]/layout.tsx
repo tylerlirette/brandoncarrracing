@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
   title: "Content Studio",
@@ -8,6 +8,12 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  viewportFit: "cover",
+};
+
 export default function StudioLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden overscroll-none">{children}</div>
+  );
 }

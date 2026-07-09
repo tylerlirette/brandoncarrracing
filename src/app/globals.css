@@ -1,25 +1,97 @@
 @import "tailwindcss";
 
-:root {
+/*
+ * Site theme — defaults here; Global Styles in Sanity can override colors, fonts, and type scale.
+ * Components use semantic Tailwind tokens (text-foreground, text-muted, etc.), not raw palette names.
+ */
+:root,
+[data-type-scale="default"] {
   --background: #ffffff;
   --foreground: #18181b;
+  --muted: #52525b;
+  --subtle: #71717a;
+  --body-emphasis: #3f3f46;
+  --surface-muted: #fafafa;
+  --surface-subtle: #f4f4f5;
+  --border: #e4e4e7;
+  --surface-inverse: #09090b;
+  --inverse: #e4e4e7;
+  --inverse-muted: #a1a1aa;
+  --inverse-subtle: #d4d4d8;
+  --badge: #27272a;
   --brand: #e30613;
-  --brand-dark: #b30510;
-  --brand-silver: #808184;
+  --brand-secondary: #b30510;
+  --brand-tertiary: #808184;
+  --font-heading-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  --font-body-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --text-body: 0.875rem;
+  --text-body-md: 1rem;
+  --text-body-small: 0.75rem;
+  --text-heading-page: 1.875rem;
+  --text-heading-page-md: 2.25rem;
+  --text-heading-card: 1.125rem;
+  --text-heading-card-md: 1.25rem;
+  --text-heading-footer: 0.875rem;
+  --text-hero-heading: 1.875rem;
+  --text-hero-heading-md: 3rem;
+  --text-hero-heading-minimal: 1.5rem;
+  --text-hero-heading-minimal-md: 2.25rem;
+}
+
+[data-type-scale="compact"] {
+  --text-body: 0.8125rem;
+  --text-body-md: 0.9375rem;
+  --text-body-small: 0.6875rem;
+  --text-heading-page: 1.625rem;
+  --text-heading-page-md: 1.875rem;
+  --text-heading-card: 1rem;
+  --text-heading-card-md: 1.125rem;
+  --text-heading-footer: 0.8125rem;
+  --text-hero-heading: 1.625rem;
+  --text-hero-heading-md: 2.5rem;
+  --text-hero-heading-minimal: 1.25rem;
+  --text-hero-heading-minimal-md: 1.875rem;
+}
+
+[data-type-scale="large"] {
+  --text-body: 1rem;
+  --text-body-md: 1.125rem;
+  --text-body-small: 0.875rem;
+  --text-heading-page: 2.25rem;
+  --text-heading-page-md: 2.75rem;
+  --text-heading-card: 1.25rem;
+  --text-heading-card-md: 1.5rem;
+  --text-heading-footer: 1rem;
+  --text-hero-heading: 2.25rem;
+  --text-hero-heading-md: 3.75rem;
+  --text-hero-heading-minimal: 1.75rem;
+  --text-hero-heading-minimal-md: 2.75rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-body-emphasis: var(--body-emphasis);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-border: var(--border);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-inverse: var(--inverse);
+  --color-inverse-muted: var(--inverse-muted);
+  --color-inverse-subtle: var(--inverse-subtle);
+  --color-badge: var(--badge);
   --color-brand: var(--brand);
-  --color-brand-dark: var(--brand-dark);
-  --color-brand-silver: var(--brand-silver);
-  --font-sans: var(--font-body);
-  --font-heading: var(--font-barlow);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-tertiary: var(--brand-tertiary);
+  --font-sans: var(--font-body-family);
+  --font-heading: var(--font-heading-family);
 }
 
-body {
+.site-root {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-body-family), ui-sans-serif, system-ui, sans-serif;
+  min-height: 100%;
 }
