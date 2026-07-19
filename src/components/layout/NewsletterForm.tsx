@@ -1,10 +1,37 @@
 "use client";
 
 import { useState } from "react";
+import type { FooterTheme } from "@/lib/footer";
+import { radiusStyles } from "@/lib/theme";
 
-export function NewsletterForm() {
+type NewsletterFormProps = {
+  theme?: FooterTheme;
+};
+
+const formStyles: Record<
+  FooterTheme,
+  { input: string; button: string; message: string }
+> = {
+  dark: {
+    input:
+      `min-w-0 flex-1 border border-white/25 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-subtle focus:border-brand focus:outline-none ${radiusStyles.input}`,
+    button:
+      `shrink-0 bg-background px-4 py-2 text-sm font-bold uppercase tracking-wide text-foreground transition hover:bg-surface-subtle ${radiusStyles.button}`,
+    message: "basis-full text-xs text-inverse-subtle sm:order-last",
+  },
+  light: {
+    input:
+      `min-w-0 flex-1 border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-subtle focus:border-brand focus:outline-none ${radiusStyles.input}`,
+    button:
+      `shrink-0 bg-brand px-4 py-2 text-sm font-bold uppercase tracking-wide text-white transition hover:bg-brand-secondary ${radiusStyles.button}`,
+    message: "basis-full text-xs text-muted sm:order-last",
+  },
+};
+
+export function NewsletterForm({ theme = "dark" }: NewsletterFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const styles = formStyles[theme];
 
   return (
     <form
@@ -52,17 +79,13 @@ export function NewsletterForm() {
         disabled={isSubmitting}
         autoComplete="email"
         placeholder="Email address"
-        className="min-w-0 flex-1 border border-white/25 bg-white/10 px-3 py-2 text-sm text-white placeholder:text-subtle focus:border-brand focus:outline-none"
+        className={styles.input}
       />
       <input type="text" name="company" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="shrink-0 bg-background px-4 py-2 text-sm font-bold uppercase tracking-wide text-foreground transition hover:bg-surface-subtle"
-      >
+      <button type="submit" disabled={isSubmitting} className={styles.button}>
         {isSubmitting ? "Submitting..." : "Sign up"}
       </button>
-      {message ? <p className="basis-full text-xs text-inverse-subtle sm:order-last">{message}</p> : null}
+      {message ? <p className={styles.message}>{message}</p> : null}
     </form>
   );
 }

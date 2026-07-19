@@ -1,5 +1,5 @@
-import { defineField, defineType } from "sanity";
-import { headerLinksField, pageSectionMembers } from "./pageSections";
+import { defineArrayMember, defineField, defineType } from "sanity";
+import { contentSectionMembers } from "./pageSections";
 
 const RESERVED_SLUGS = new Set(["studio", "api", "_next"]);
 
@@ -78,7 +78,7 @@ export const pageType = defineType({
       title: "Layout",
       type: "string",
       group: "settings",
-      description: "Controls overall page width. Sections can still use full-bleed components like Hero.",
+      description: "Controls overall page width. Hero stays full-bleed regardless.",
       options: {
         list: [
           { title: "Default", value: "default" },
@@ -89,14 +89,18 @@ export const pageType = defineType({
       },
       initialValue: "default",
     }),
-    headerLinksField,
     defineField({
       name: "sections",
       title: "Page sections",
       type: "array",
       group: "content",
-      description: "Add and reorder sections to build the page.",
-      of: pageSectionMembers,
+      description:
+        "Add a Hero, content Section, or Instagram feed. Sections use column layouts (cards, image, or rich text).",
+      of: [
+        ...contentSectionMembers,
+        defineArrayMember({ type: "heroSection" }),
+        defineArrayMember({ type: "instagramSection" }),
+      ],
     }),
     defineField({
       name: "seo",
@@ -115,6 +119,21 @@ export const pageType = defineType({
           title: "Meta description",
           type: "text",
           rows: 3,
+        }),
+        defineField({
+          name: "image",
+          title: "Share image",
+          type: "image",
+          description:
+            "Open Graph / Twitter image for this page. Falls back to Site Settings → Default share image. Recommended 1200×630.",
+          options: { hotspot: true },
+          fields: [
+            defineField({
+              name: "alt",
+              title: "Alt text",
+              type: "string",
+            }),
+          ],
         }),
       ],
     }),

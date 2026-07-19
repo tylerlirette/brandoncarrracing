@@ -24,6 +24,9 @@
   --brand-tertiary: #808184;
   --font-heading-family: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
   --font-body-family: "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  --heading-text-transform: uppercase;
+  --heading-font-style: italic;
+  --heading-font-weight: 700;
   --text-body: 0.875rem;
   --text-body-md: 1rem;
   --text-body-small: 0.75rem;
@@ -36,6 +39,38 @@
   --text-hero-heading-md: 3rem;
   --text-hero-heading-minimal: 1.5rem;
   --text-hero-heading-minimal-md: 2.25rem;
+  --radius-button: 0.125rem;
+  --radius-card: 0.125rem;
+  --radius-element: 0.125rem;
+  --radius-input: 0.125rem;
+}
+
+[data-roundedness="none"] {
+  --radius-button: 0;
+  --radius-card: 0;
+  --radius-element: 0;
+  --radius-input: 0;
+}
+
+[data-roundedness="subtle"] {
+  --radius-button: 0.125rem;
+  --radius-card: 0.125rem;
+  --radius-element: 0.125rem;
+  --radius-input: 0.125rem;
+}
+
+[data-roundedness="soft"] {
+  --radius-button: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-element: 0.375rem;
+  --radius-input: 0.5rem;
+}
+
+[data-roundedness="full"] {
+  --radius-button: 9999px;
+  --radius-card: 1rem;
+  --radius-element: 0.75rem;
+  --radius-input: 9999px;
 }
 
 [data-type-scale="compact"] {

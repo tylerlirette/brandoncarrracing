@@ -1,22 +1,5 @@
 import { heroConfigFromSlides, defaultHeroConfig } from "@/lib/hero";
 
-const LEGACY_SECTION_KEYS: Record<string, string> = {
-  highlights: "eventCards",
-  teams: "infoCards",
-};
-
-const DEFAULT_SECTION_ORDER = [
-  "hero",
-  "intro",
-  "featureCards",
-  "profile",
-  "infoCards",
-  "eventCards",
-  "news",
-  "partners",
-  "instagram",
-];
-
 type SanityKeyed = {
   _key?: string;
   _type?: string;
@@ -75,13 +58,29 @@ export type SanityPageDocument = {
   title: string;
   slug: string;
   layout: "default" | "narrow" | "fullWidth";
-  headerLinks?: SanityKeyed[];
   sections: SanityKeyed[];
   seo: {
     title?: string;
     description?: string;
   };
 };
+
+const LEGACY_SECTION_KEYS: Record<string, string> = {
+  highlights: "eventCards",
+  teams: "infoCards",
+};
+
+const DEFAULT_SECTION_ORDER = [
+  "hero",
+  "intro",
+  "featureCards",
+  "profile",
+  "infoCards",
+  "eventCards",
+  "news",
+  "partners",
+  "instagram",
+];
 
 function withKey<T extends SanityKeyed>(value: T, key: string): T {
   return { ...value, _key: value._key || key };
@@ -95,12 +94,72 @@ function mapArrayWithKeys<T extends SanityKeyed>(items: T[] | undefined, prefix:
   return items.map((item, index) => withKey(item, item._key || `${prefix}-${index}`));
 }
 
+function emptySectionShell(sectionId: string, extras: SanityKeyed = {}): SanityKeyed {
+  return {
+    _type: "contentSection",
+    sectionId,
+    textAlign: "center",
+    theme: "light",
+    spacing: "default",
+    border: { position: "none", width: "thin" },
+    overlay: { type: "none" },
+    ...extras,
+  };
+}
+
+function richTextColumn(key: string, text: unknown): SanityKeyed {
+  return {
+    _key: key,
+    verticalAlign: "top",
+    component: [
+      {
+        _type: "columnRichText",
+        _key: `${key}-component`,
+        text,
+      },
+    ],
+  };
+}
+
+function cardColumn(key: string, card: SanityKeyed, cardType: string, style: string): SanityKeyed {
+  return {
+    _key: key,
+    verticalAlign: "top",
+    component: [
+      {
+        _type: "columnCard",
+        _key: `${key}-component`,
+        cardType,
+        style,
+        clickMode: card.href ? "card" : "none",
+        shadow: "medium",
+        alignment: "left",
+        aspectRatio: "landscape",
+        textSize: "medium",
+        ...card,
+      },
+    ],
+  };
+}
+
+function layout(
+  key: string,
+  variant: "singleColumn" | "twoColumn" | "threeColumn",
+  columns: SanityKeyed[]
+): SanityKeyed {
+  return {
+    _type: "columnLayout",
+    _key: key,
+    variant,
+    gridColumns: 4,
+    gridRows: 1,
+    columns,
+  };
+}
+
 function heroFromLegacy(legacy: RawLegacyHomePageDocument): SanityKeyed | undefined {
   if (legacy.hero) {
-    const images = mapArrayWithKeys(
-      legacy.hero.images as SanityKeyed[] | undefined,
-      "hero-image"
-    );
+    const images = mapArrayWithKeys(legacy.hero.images as SanityKeyed[] | undefined, "hero-image");
     return {
       ...legacy.hero,
       ...(images ? { images } : {}),
@@ -137,6 +196,10 @@ function heroFromLegacy(legacy: RawLegacyHomePageDocument): SanityKeyed | undefi
   };
 }
 
+/**
+ * Converts a flat legacy homePage document into the reusable page model:
+ * heroSection | contentSection (column layouts) | instagramSection.
+ */
 export function legacyHomePageDocumentToPageDocument(
   legacy: RawLegacyHomePageDocument,
   options?: { pageId?: string; title?: string }
@@ -160,75 +223,141 @@ export function legacyHomePageDocumentToPageDocument(
   const sectionBuilders: Record<string, SanityKeyed | undefined> = {
     hero: hero ? withKey({ _type: "heroSection", ...hero }, "hero") : undefined,
     intro: withKey(
-      {
-        _type: "introSection",
-        sectionId: legacy.welcomeSectionId,
-        title: legacy.welcomeTitle,
-        description: legacy.welcomeDescription,
-      },
+      emptySectionShell(legacy.welcomeSectionId || "about", {
+        heading: legacy.welcomeTitle,
+        layouts: legacy.welcomeDescription
+          ? [layout("intro-layout", "singleColumn", [richTextColumn("intro-col", legacy.welcomeDescription)])]
+          : [],
+      }),
       "intro"
     ),
     featureCards: withKey(
-      {
-        _type: "featureCardsSection",
-        sectionId: legacy.featureCardsSectionId,
-        cards: mapArrayWithKeys(legacy.featureCards, "feature-card"),
-      },
+      emptySectionShell(legacy.featureCardsSectionId || "feature-cards", {
+        layouts: legacy.featureCards?.length
+          ? [
+              layout(
+                "feature-layout",
+                legacy.featureCards.length >= 3 ? "threeColumn" : "twoColumn",
+                legacy.featureCards.map((card, index) =>
+                  cardColumn(`feature-${index}`, withKey(card, `feature-card-${index}`), "feature", "overlay")
+                )
+              ),
+            ]
+          : [],
+      }),
       "featureCards"
     ),
     profile: withKey(
-      {
-        _type: "profileSection",
-        sectionId: legacy.profileSectionId,
-        title: legacy.profileTitle,
-        description: legacy.profileDescription,
-        bullets: profileBullets,
-      },
+      emptySectionShell(legacy.profileSectionId || "profile", {
+        heading: legacy.profileTitle,
+        textAlign: "left",
+        layouts: [
+          layout("profile-layout", "twoColumn", [
+            richTextColumn("profile-copy", legacy.profileDescription),
+            richTextColumn(
+              "profile-bullets",
+              (profileBullets || []).map((bullet) => ({
+                _type: "block",
+                style: "normal",
+                listItem: "bullet",
+                level: 1,
+                markDefs: [],
+                children: [{ _type: "span", text: bullet, marks: [] }],
+              }))
+            ),
+          ]),
+        ],
+      }),
       "profile"
     ),
     infoCards: withKey(
-      {
-        _type: "infoCardsSection",
-        sectionId: infoCardsSectionId,
-        title: infoCardsTitle,
-        summary: infoCardsSummary,
-        cards: mapArrayWithKeys(infoCards, "info-card"),
-      },
+      emptySectionShell(infoCardsSectionId || "teams", {
+        heading: infoCardsTitle,
+        outro: infoCardsSummary,
+        layouts: infoCards?.length
+          ? [
+              layout(
+                "info-layout",
+                "threeColumn",
+                infoCards.map((card, index) =>
+                  cardColumn(`info-${index}`, withKey(card, `info-card-${index}`), "info", "panel")
+                )
+              ),
+            ]
+          : [],
+      }),
       "infoCards"
     ),
     eventCards: withKey(
-      {
-        _type: "eventCardsSection",
-        sectionId: eventCardsSectionId,
-        title: eventCardsTitle,
-        description: eventCardsDescription,
-        events: mapArrayWithKeys(eventCards, "event-card"),
-      },
+      emptySectionShell(eventCardsSectionId || "highlights", {
+        heading: eventCardsTitle,
+        subheading: eventCardsDescription,
+        layouts: eventCards?.length
+          ? [
+              layout(
+                "events-layout",
+                "threeColumn",
+                eventCards.map((card, index) =>
+                  cardColumn(`event-${index}`, withKey(card, `event-card-${index}`), "event", "stacked")
+                )
+              ),
+            ]
+          : [],
+      }),
       "eventCards"
     ),
     news: withKey(
-      {
-        _type: "newsSection",
-        sectionId: legacy.newsSectionId,
-        title: legacy.newsTitle,
-        description: legacy.newsDescription,
-        articles: mapArrayWithKeys(legacy.pressArticles, "press-article"),
-      },
+      emptySectionShell(legacy.newsSectionId || "news", {
+        heading: legacy.newsTitle,
+        subheading: legacy.newsDescription,
+        layouts: legacy.pressArticles?.length
+          ? [
+              layout(
+                "news-layout",
+                legacy.pressArticles.length >= 2 ? "twoColumn" : "singleColumn",
+                legacy.pressArticles.map((article, index) => {
+                  const href = typeof article.href === "string" ? article.href : undefined;
+                  return cardColumn(
+                    `press-${index}`,
+                    withKey(
+                      {
+                        ...article,
+                        href,
+                        openInNewTab: true,
+                        clickMode: "cta",
+                        cta: href
+                          ? { label: "Read article", href, style: "link", openInNewTab: true }
+                          : undefined,
+                      },
+                      `press-article-${index}`
+                    ),
+                    "press",
+                    "article"
+                  );
+                })
+              ),
+            ]
+          : [],
+      }),
       "news"
     ),
     partners: withKey(
-      {
-        _type: "partnersSection",
-        sectionId: legacy.partnersSectionId,
-        title: legacy.partnersTitle,
-        description: legacy.partnersDescription,
-      },
+      emptySectionShell(legacy.partnersSectionId || "partners", {
+        heading: legacy.partnersTitle,
+        layouts: legacy.partnersDescription
+          ? [
+              layout("partners-layout", "singleColumn", [
+                richTextColumn("partners-copy", legacy.partnersDescription),
+              ]),
+            ]
+          : [],
+      }),
       "partners"
     ),
     instagram: withKey(
       {
         _type: "instagramSection",
-        sectionId: legacy.instagramSectionId,
+        sectionId: legacy.instagramSectionId || "instagram",
         heading: legacy.instagramHeading,
         description: legacy.instagramDescription,
         instagramUrl: legacy.instagramUrl,
@@ -247,7 +376,6 @@ export function legacyHomePageDocumentToPageDocument(
     title: options?.title || legacy.welcomeTitle?.trim() || "Home",
     slug: "/",
     layout: "default",
-    headerLinks: mapArrayWithKeys(legacy.headerLinks, "header-link"),
     sections,
     seo: {},
   };

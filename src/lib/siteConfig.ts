@@ -1,6 +1,14 @@
-/** Site-wide branding — swap this file (or values) when spinning up a new site. */
+/**
+ * Code-level fallbacks for site identity.
+ *
+ * Prefer editing **Site Settings** in Sanity for day-to-day branding.
+ * Keep this file for clone defaults when Studio is empty or offline, and for
+ * `NEXT_PUBLIC_SITE_URL` (canonical origin is env-driven, not CMS).
+ */
 export const siteConfig = {
   name: "Brandon Carr Racing",
+  /** Canonical site origin for metadata / Open Graph. Override with NEXT_PUBLIC_SITE_URL. */
+  url: process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "http://localhost:3000",
   description:
     "Official home of Brandon Carr — British karting champion, IHRA stock car winner, Keith Kunz midget driver, and Setzer Racing late model competitor on the ARCA / NASCAR development ladder.",
   openGraphDescription:

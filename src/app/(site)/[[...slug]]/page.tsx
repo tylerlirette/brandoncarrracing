@@ -1,54 +1,32 @@
 import { PageSections } from "@/components/page/PageSections";
-import { SiteFooter } from "@/components/layout/SiteFooter";
-import { SiteHeader } from "@/components/layout/SiteHeader";
-import {
-  convertLegacyHomePage,
-  mergePageContent,
-  slugFromPathSegments,
-  staticParamsFromSlug,
-  type RawLegacyHomePageContent,
-} from "@/lib/page";
-import { siteConfig } from "@/lib/siteConfig";
-import { client } from "@/sanity/lib/client";
-import { allPageSlugsQuery, legacyHomePageQuery, pageBySlugQuery } from "@/sanity/lib/queries";
+import { getPageBySlug } from "@/lib/getPage";
+import { slugFromPathSegments, staticParamsFromSlug } from "@/lib/page";
+import { getSiteSettings } from "@/lib/getSiteSettings";
+import { buildPageMetadata } from "@/lib/seo";
+import { sanityFetch } from "@/sanity/lib/live";
+import { allPageSlugsQuery } from "@/sanity/lib/queries";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-/** Re-fetch pages from Sanity periodically so published edits show without redeploying. */
+/**
+ * Fallback ISR window. Prefer the Sanity webhook (`/api/revalidate`) for immediate publishes.
+ */
 export const revalidate = 60;
 
 type PageProps = {
   params: Promise<{ slug?: string[] }>;
 };
 
-async function getPageBySlug(slug: string) {
-  try {
-    const page = await client.fetch(pageBySlugQuery, { slug });
-    if (page) {
-      return mergePageContent(page);
-    }
-
-    if (slug === "/") {
-      const legacy = await client.fetch<RawLegacyHomePageContent | null>(legacyHomePageQuery);
-      if (legacy) {
-        return mergePageContent(convertLegacyHomePage(legacy));
-      }
-    }
-
-    return null;
-  } catch {
-    if (slug === "/") {
-      return mergePageContent(null);
-    }
-    return null;
-  }
-}
-
 export async function generateStaticParams() {
   try {
-    const pages = await client.fetch<{ slug: string }[]>(allPageSlugsQuery);
-    const params = pages.map((page) => staticParamsFromSlug(page.slug));
-    const hasHome = pages.some((page) => page.slug === "/");
+    const { data: pages } = await sanityFetch({
+      query: allPageSlugsQuery,
+      perspective: "published",
+      stega: false,
+    });
+    const rows = (pages || []) as { slug: string }[];
+    const params = rows.map((page) => staticParamsFromSlug(page.slug));
+    const hasHome = rows.some((page) => page.slug === "/");
     return hasHome ? params : [{}, ...params];
   } catch {
     return [{}];
@@ -58,42 +36,42 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug: segments } = await params;
   const slug = slugFromPathSegments(segments);
-  const page = await getPageBySlug(slug);
+  const settings = await getSiteSettings();
+
+  let page;
+  try {
+    page = await getPageBySlug(slug, false);
+  } catch {
+    return { title: "Unavailable" };
+  }
 
   if (!page) {
     return { title: "Page not found" };
   }
 
-  const title = page.seo.title?.trim() || page.title || siteConfig.name;
-  const description = page.seo.description?.trim() || siteConfig.description;
-
-  return {
-    title,
-    description,
-    openGraph: {
-      title,
-      description,
-      type: "website",
-    },
-  };
+  return buildPageMetadata({
+    pageTitle: page.title,
+    slug: page.slug,
+    seo: page.seo,
+    settings,
+  });
 }
 
 export default async function DynamicPage({ params }: PageProps) {
   const { slug: segments } = await params;
   const slug = slugFromPathSegments(segments);
-  const page = await getPageBySlug(slug);
+  const [page, settings] = await Promise.all([getPageBySlug(slug, true), getSiteSettings()]);
 
   if (!page) {
     notFound();
   }
 
   return (
-    <>
-      <SiteHeader links={page.headerLinks} />
-      <main className="flex-1">
-        <PageSections page={page} />
-      </main>
-      <SiteFooter />
-    </>
+    <main className="flex-1">
+      <PageSections
+        page={page}
+        instagramWidgetSrc={settings.instagramWidget.defaultIframeSrc}
+      />
+    </main>
   );
 }

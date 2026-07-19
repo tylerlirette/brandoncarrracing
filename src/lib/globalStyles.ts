@@ -1,12 +1,15 @@
 import type { CSSProperties } from "react";
 import {
   GOOGLE_FONT_OPTIONS,
-  TYPE_SCALE_OPTIONS,
   parseGoogleFontsStylesheetUrl,
 } from "@/lib/globalStyles.shared";
 
 export {
   GOOGLE_FONT_OPTIONS,
+  HEADING_FONT_STYLE_OPTIONS,
+  HEADING_FONT_WEIGHT_OPTIONS,
+  HEADING_TEXT_TRANSFORM_OPTIONS,
+  ROUNDEDNESS_OPTIONS,
   TYPE_SCALE_OPTIONS,
   parseGoogleFontsStylesheetUrl,
 } from "@/lib/globalStyles.shared";
@@ -19,6 +22,10 @@ export type SanityColorValue = {
 };
 
 export type TypeScale = "compact" | "default" | "large";
+export type Roundedness = "none" | "subtle" | "soft" | "full";
+export type HeadingTextTransform = "uppercase" | "none";
+export type HeadingFontStyle = "italic" | "normal";
+export type HeadingFontWeight = "500" | "600" | "700" | "800";
 
 export type GlobalStylesColors = {
   background: string;
@@ -45,11 +52,15 @@ export type GlobalStylesTypography = {
   /** Optional override — validated Google Fonts stylesheet URL from the embed code. */
   googleFontsStylesheetUrl?: string;
   typeScale: TypeScale;
+  headingTextTransform: HeadingTextTransform;
+  headingFontStyle: HeadingFontStyle;
+  headingFontWeight: HeadingFontWeight;
 };
 
 export type GlobalStyles = {
   colors: GlobalStylesColors;
   typography: GlobalStylesTypography;
+  roundedness: Roundedness;
 };
 
 /** Mirrors `:root` defaults in globals.css — used when Sanity has no value. */
@@ -76,7 +87,11 @@ export const DEFAULT_GLOBAL_STYLES: GlobalStyles = {
     headingFont: "Barlow Condensed",
     bodyFont: "Source Sans 3",
     typeScale: "default",
+    headingTextTransform: "uppercase",
+    headingFontStyle: "italic",
+    headingFontWeight: "700",
   },
+  roundedness: "subtle",
 };
 
 type SanityGlobalStylesInput = {
@@ -87,6 +102,7 @@ type SanityGlobalStylesInput = {
     brandSilver?: SanityColorValue | string;
   };
   typography?: Partial<GlobalStylesTypography>;
+  roundedness?: string;
 };
 
 const COLOR_FIELD_TO_CSS_VAR: Record<keyof GlobalStylesColors, string> = {
@@ -144,6 +160,22 @@ function isTypeScale(value: string | undefined): value is TypeScale {
   return value === "compact" || value === "default" || value === "large";
 }
 
+function isRoundedness(value: string | undefined): value is Roundedness {
+  return value === "none" || value === "subtle" || value === "soft" || value === "full";
+}
+
+function isHeadingTextTransform(value: string | undefined): value is HeadingTextTransform {
+  return value === "uppercase" || value === "none";
+}
+
+function isHeadingFontStyle(value: string | undefined): value is HeadingFontStyle {
+  return value === "italic" || value === "normal";
+}
+
+function isHeadingFontWeight(value: string | undefined): value is HeadingFontWeight {
+  return value === "500" || value === "600" || value === "700" || value === "800";
+}
+
 function isAllowedGoogleFont(value: string | undefined): value is (typeof GOOGLE_FONT_OPTIONS)[number]["value"] {
   if (!value?.trim()) {
     return false;
@@ -165,7 +197,7 @@ export function buildGoogleFontsStylesheetUrl(typography: GlobalStylesTypography
   const heading = encodeGoogleFontFamily(typography.headingFont);
   const body = encodeGoogleFontFamily(typography.bodyFont);
 
-  return `https://fonts.googleapis.com/css2?family=${heading}:ital,wght@0,500;0,600;0,700;1,500;1,600;1,700&family=${body}:wght@400;600;700&display=swap`;
+  return `https://fonts.googleapis.com/css2?family=${heading}:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700;1,800&family=${body}:wght@400;600;700&display=swap`;
 }
 
 export function mergeGlobalStyles(input: SanityGlobalStylesInput | null | undefined): GlobalStyles {
@@ -196,15 +228,27 @@ export function mergeGlobalStyles(input: SanityGlobalStylesInput | null | undefi
     typeScale: isTypeScale(input?.typography?.typeScale)
       ? input.typography.typeScale
       : defaults.typography.typeScale,
+    headingTextTransform: isHeadingTextTransform(input?.typography?.headingTextTransform)
+      ? input.typography.headingTextTransform
+      : defaults.typography.headingTextTransform,
+    headingFontStyle: isHeadingFontStyle(input?.typography?.headingFontStyle)
+      ? input.typography.headingFontStyle
+      : defaults.typography.headingFontStyle,
+    headingFontWeight: isHeadingFontWeight(input?.typography?.headingFontWeight)
+      ? input.typography.headingFontWeight
+      : defaults.typography.headingFontWeight,
   };
 
-  return { colors, typography };
+  return { colors, typography, roundedness: isRoundedness(input?.roundedness) ? input.roundedness : defaults.roundedness };
 }
 
 export function globalStylesToCssProperties(styles: GlobalStyles): CSSProperties {
   const vars: Record<string, string> = {
     "--font-heading-family": `"${styles.typography.headingFont}", ui-sans-serif, system-ui, sans-serif`,
     "--font-body-family": `"${styles.typography.bodyFont}", ui-sans-serif, system-ui, sans-serif`,
+    "--heading-text-transform": styles.typography.headingTextTransform,
+    "--heading-font-style": styles.typography.headingFontStyle,
+    "--heading-font-weight": styles.typography.headingFontWeight,
   };
 
   for (const [field, cssVar] of Object.entries(COLOR_FIELD_TO_CSS_VAR) as [keyof GlobalStylesColors, string][]) {

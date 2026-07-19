@@ -1,5 +1,8 @@
 import { defineArrayMember, defineField, defineType, type PreviewValue } from "sanity";
-import { headerLinkFields, richTextWithLinks, sectionIdField } from "./shared/contentFields";
+import { HREF_FIELD_DESCRIPTION, validateHrefValue } from "@/lib/href";
+import { validateLightWidgetIframeSrc } from "@/lib/lightwidget";
+import { columnLayoutType } from "./columnLayout";
+import { richTextWithLinks, sectionIdField } from "./shared/contentFields";
 
 function heroTextFieldsHidden({ parent }: { parent?: { showHeroText?: boolean } }) {
   return !parent?.showHeroText;
@@ -20,20 +23,125 @@ const imageWithAltPreview = {
   },
 };
 
-const titledImagePreview = {
-  select: {
-    title: "title",
-    subtitle: "image",
-    media: "imageAsset",
-  },
-  prepare({ title, subtitle, media }: { title?: string; subtitle?: string; media?: PreviewValue["media"] }): PreviewValue {
-    return {
-      title: title?.trim() || "Untitled",
-      subtitle: subtitle?.trim() || undefined,
-      media,
-    };
-  },
-};
+/** Shared image overlay (hero + page sections): none / gradient / solid color. */
+const imageOverlayField = (options?: { initialType?: "none" | "gradient" | "color"; title?: string }) =>
+  defineField({
+    name: "overlay",
+    title: options?.title || "Image overlay",
+    type: "object",
+    description: "Optional wash over the background image to improve contrast.",
+    fields: [
+      defineField({
+        name: "type",
+        title: "Overlay type",
+        type: "string",
+        options: {
+          list: [
+            { title: "None", value: "none" },
+            { title: "Gradient", value: "gradient" },
+            { title: "Solid color", value: "color" },
+          ],
+          layout: "radio",
+        },
+        initialValue: options?.initialType || "none",
+      }),
+      defineField({
+        name: "gradientMode",
+        title: "Gradient style",
+        type: "string",
+        options: {
+          list: [
+            { title: "Preset", value: "preset" },
+            { title: "Custom", value: "custom" },
+          ],
+          layout: "radio",
+        },
+        initialValue: "preset",
+        hidden: ({ parent }) => parent?.type !== "gradient",
+      }),
+      defineField({
+        name: "gradientDirection",
+        title: "Gradient direction",
+        type: "string",
+        description: "Quick presets for common overlays.",
+        options: {
+          list: [
+            { title: "Dark at bottom", value: "bottom" },
+            { title: "Dark at top", value: "top" },
+            { title: "Dark in center", value: "center" },
+            { title: "Even wash", value: "full" },
+          ],
+          layout: "radio",
+        },
+        initialValue: "bottom",
+        hidden: ({ parent }) => parent?.type !== "gradient" || parent?.gradientMode === "custom",
+      }),
+      defineField({
+        name: "gradientAngle",
+        title: "Gradient direction (degrees)",
+        type: "number",
+        description: "CSS angle: 0° = toward top, 90° = toward right, 180° = toward bottom.",
+        validation: (rule) => rule.min(0).max(360),
+        initialValue: 0,
+        hidden: ({ parent }) => parent?.type !== "gradient" || parent?.gradientMode !== "custom",
+      }),
+      defineField({
+        name: "gradientStops",
+        title: "Gradient stops",
+        type: "array",
+        description: "Add at least two stops. Position is 0–100 along the gradient line.",
+        validation: (rule) => rule.min(2).max(6),
+        hidden: ({ parent }) => parent?.type !== "gradient" || parent?.gradientMode !== "custom",
+        of: [
+          defineArrayMember({
+            type: "object",
+            fields: [
+              defineField({
+                name: "color",
+                title: "Color",
+                type: "color",
+                options: {
+                  disableAlpha: false,
+                  colorList: ["#000000", "#ffffff"],
+                },
+              }),
+              defineField({
+                name: "position",
+                title: "Position (%)",
+                type: "number",
+                validation: (rule) => rule.required().min(0).max(100),
+              }),
+            ],
+            preview: {
+              select: { position: "position", color: "color.hex" },
+              prepare({ position, color }) {
+                return {
+                  title: `${position ?? 0}%`,
+                  subtitle: color || "Pick a color",
+                };
+              },
+            },
+          }),
+        ],
+        initialValue: [
+          { color: { hex: "#000000", alpha: 0.65 }, position: 0 },
+          { color: { hex: "#000000", alpha: 0.25 }, position: 50 },
+          { color: { hex: "#000000", alpha: 0 }, position: 100 },
+        ],
+      }),
+      defineField({
+        name: "color",
+        title: "Overlay color",
+        type: "color",
+        description: "Use the color picker and alpha slider to set the overlay color and transparency.",
+        options: {
+          disableAlpha: false,
+          colorList: ["#000000", "#ffffff"],
+        },
+        hidden: ({ parent }) => parent?.type !== "color",
+      }),
+    ],
+  });
 
 const heroFields = [
   defineField({
@@ -85,7 +193,7 @@ const heroFields = [
             name: "src",
             title: "Fallback image path or URL",
             type: "string",
-            description: "Optional fallback, e.g. /images/carousel-1.webp",
+            description: "Optional fallback, e.g. /images/hero.webp",
           }),
           defineField({ name: "alt", title: "Alt text", type: "string", validation: (rule) => rule.required() }),
         ],
@@ -123,7 +231,8 @@ const heroFields = [
         name: "href",
         title: "Link URL",
         type: "string",
-        description: "Internal path, #anchor, or full URL.",
+        description: HREF_FIELD_DESCRIPTION,
+        validation: (rule) => rule.custom((value) => validateHrefValue(value, { required: true })),
       }),
       defineField({ name: "openInNewTab", title: "Open in new tab", type: "boolean", initialValue: false }),
     ],
@@ -189,122 +298,7 @@ const heroFields = [
     initialValue: "default",
     hidden: heroTextFieldsHidden,
   }),
-  defineField({
-    name: "overlay",
-    title: "Image overlay",
-    type: "object",
-    fields: [
-      defineField({
-        name: "type",
-        title: "Overlay type",
-        type: "string",
-        options: {
-          list: [
-            { title: "None", value: "none" },
-            { title: "Gradient", value: "gradient" },
-            { title: "Solid color", value: "color" },
-          ],
-          layout: "radio",
-        },
-        initialValue: "gradient",
-      }),
-      defineField({
-        name: "gradientMode",
-        title: "Gradient style",
-        type: "string",
-        options: {
-          list: [
-            { title: "Preset", value: "preset" },
-            { title: "Custom", value: "custom" },
-          ],
-          layout: "radio",
-        },
-        initialValue: "preset",
-        hidden: ({ parent }) => parent?.type !== "gradient",
-      }),
-      defineField({
-        name: "gradientDirection",
-        title: "Gradient direction",
-        type: "string",
-        description: "Quick presets for common hero overlays.",
-        options: {
-          list: [
-            { title: "Dark at bottom (text at bottom)", value: "bottom" },
-            { title: "Dark at top", value: "top" },
-            { title: "Dark in center", value: "center" },
-            { title: "Even wash", value: "full" },
-          ],
-          layout: "radio",
-        },
-        initialValue: "bottom",
-        hidden: ({ parent }) => parent?.type !== "gradient" || parent?.gradientMode === "custom",
-      }),
-      defineField({
-        name: "gradientAngle",
-        title: "Gradient direction (degrees)",
-        type: "number",
-        description: "CSS angle: 0° = toward top, 90° = toward right, 180° = toward bottom.",
-        validation: (rule) => rule.min(0).max(360),
-        initialValue: 0,
-        hidden: ({ parent }) => parent?.type !== "gradient" || parent?.gradientMode !== "custom",
-      }),
-      defineField({
-        name: "gradientStops",
-        title: "Gradient stops",
-        type: "array",
-        description: "Add at least two stops. Position is 0–100 along the gradient line.",
-        validation: (rule) => rule.min(2).max(6),
-        hidden: ({ parent }) => parent?.type !== "gradient" || parent?.gradientMode !== "custom",
-        of: [
-          defineArrayMember({
-            type: "object",
-            fields: [
-              defineField({
-                name: "color",
-                title: "Color",
-                type: "color",
-                options: {
-                  disableAlpha: false,
-                  colorList: ["#000000", "#e30613", "#ffffff"],
-                },
-              }),
-              defineField({
-                name: "position",
-                title: "Position (%)",
-                type: "number",
-                validation: (rule) => rule.required().min(0).max(100),
-              }),
-            ],
-            preview: {
-              select: { position: "position", color: "color.hex" },
-              prepare({ position, color }) {
-                return {
-                  title: `${position ?? 0}%`,
-                  subtitle: color || "Pick a color",
-                };
-              },
-            },
-          }),
-        ],
-        initialValue: [
-          { color: { hex: "#000000", alpha: 0.65 }, position: 0 },
-          { color: { hex: "#000000", alpha: 0.25 }, position: 50 },
-          { color: { hex: "#000000", alpha: 0 }, position: 100 },
-        ],
-      }),
-      defineField({
-        name: "color",
-        title: "Overlay color",
-        type: "color",
-        description: "Use the color picker and alpha slider to set the overlay color and transparency.",
-        options: {
-          disableAlpha: false,
-          colorList: ["#000000", "#e30613", "#ffffff"],
-        },
-        hidden: ({ parent }) => parent?.type !== "color",
-      }),
-    ],
-  }),
+  imageOverlayField({ initialType: "gradient", title: "Image overlay" }),
   defineField({
     name: "carouselIntervalMs",
     title: "Carousel interval (ms)",
@@ -334,236 +328,6 @@ export const heroSectionType = defineType({
   },
 });
 
-export const introSectionType = defineType({
-  name: "introSection",
-  title: "Intro",
-  type: "object",
-  fields: [
-    sectionIdField("about"),
-    defineField({ name: "title", title: "Title", type: "string" }),
-    defineField({ name: "description", title: "Description", ...richTextWithLinks }),
-  ],
-  preview: {
-    select: { title: "title" },
-    prepare({ title }) {
-      return { title: title?.trim() || "Intro" };
-    },
-  },
-});
-
-export const featureCardsSectionType = defineType({
-  name: "featureCardsSection",
-  title: "Feature Cards",
-  type: "object",
-  fields: [
-    sectionIdField("feature-cards"),
-    defineField({
-      name: "cards",
-      title: "Cards",
-      type: "array",
-      of: [
-        defineArrayMember({
-          type: "object",
-          fields: [
-            defineField({ name: "title", title: "Title", type: "string", validation: (rule) => rule.required() }),
-            defineField({ name: "description", title: "Description", ...richTextWithLinks }),
-            defineField({ name: "href", title: "Link", type: "string", initialValue: "#" }),
-            defineField({
-              name: "imageAsset",
-              title: "Uploaded image",
-              type: "image",
-              options: { hotspot: true },
-            }),
-            defineField({
-              name: "image",
-              title: "Fallback image path",
-              type: "string",
-              description: "Optional fallback, example: /images/about.webp",
-            }),
-          ],
-          preview: {
-            select: { title: "title", subtitle: "href", media: "imageAsset" },
-            prepare({ title, subtitle, media }: { title?: string; subtitle?: string; media?: PreviewValue["media"] }): PreviewValue {
-              return {
-                title: title?.trim() || "Feature card",
-                subtitle: subtitle?.trim() || undefined,
-                media,
-              };
-            },
-          },
-        }),
-      ],
-    }),
-  ],
-  preview: {
-    prepare() {
-      return { title: "Feature Cards" };
-    },
-  },
-});
-
-export const profileSectionType = defineType({
-  name: "profileSection",
-  title: "Profile",
-  type: "object",
-  fields: [
-    sectionIdField("profile"),
-    defineField({ name: "title", title: "Title", type: "string" }),
-    defineField({ name: "description", title: "Description", ...richTextWithLinks }),
-    defineField({
-      name: "bullets",
-      title: "Bullet points",
-      type: "array",
-      of: [defineArrayMember({ type: "string" })],
-    }),
-  ],
-  preview: {
-    select: { title: "title" },
-    prepare({ title }) {
-      return { title: title?.trim() || "Profile" };
-    },
-  },
-});
-
-export const infoCardsSectionType = defineType({
-  name: "infoCardsSection",
-  title: "Info Cards",
-  type: "object",
-  fields: [
-    sectionIdField("info"),
-    defineField({ name: "title", title: "Section title", type: "string" }),
-    defineField({ name: "summary", title: "Section summary", ...richTextWithLinks }),
-    defineField({
-      name: "cards",
-      title: "Cards",
-      type: "array",
-      of: [
-        defineArrayMember({
-          type: "object",
-          fields: [
-            defineField({ name: "title", title: "Title", type: "string", validation: (rule) => rule.required() }),
-            defineField({
-              name: "description",
-              title: "Description",
-              ...richTextWithLinks,
-              validation: (rule) => rule.required(),
-            }),
-          ],
-          preview: {
-            select: { title: "title" },
-            prepare({ title }: { title?: string }) {
-              return { title: title?.trim() || "Info card" };
-            },
-          },
-        }),
-      ],
-    }),
-  ],
-  preview: {
-    select: { title: "title" },
-    prepare({ title }) {
-      return { title: title?.trim() || "Info Cards" };
-    },
-  },
-});
-
-export const eventCardsSectionType = defineType({
-  name: "eventCardsSection",
-  title: "Event Cards",
-  type: "object",
-  fields: [
-    sectionIdField("highlights"),
-    defineField({ name: "title", title: "Section title", type: "string" }),
-    defineField({ name: "description", title: "Section description", ...richTextWithLinks }),
-    defineField({
-      name: "events",
-      title: "Events",
-      type: "array",
-      of: [
-        defineArrayMember({
-          type: "object",
-          fields: [
-            defineField({ name: "title", title: "Title", type: "string", validation: (rule) => rule.required() }),
-            defineField({ name: "subtitle", title: "Subtitle", type: "string" }),
-            defineField({ name: "date", title: "Date Label", type: "string" }),
-            defineField({
-              name: "imageAsset",
-              title: "Uploaded image",
-              type: "image",
-              options: { hotspot: true },
-            }),
-            defineField({
-              name: "image",
-              title: "Fallback image path",
-              type: "string",
-              description: "Optional fallback path in /public or external URL",
-            }),
-            defineField({ name: "note", title: "Note", type: "text", rows: 2 }),
-          ],
-          preview: titledImagePreview,
-        }),
-      ],
-    }),
-  ],
-  preview: {
-    select: { title: "title" },
-    prepare({ title }) {
-      return { title: title?.trim() || "Event Cards" };
-    },
-  },
-});
-
-export const newsSectionType = defineType({
-  name: "newsSection",
-  title: "News",
-  type: "object",
-  fields: [
-    sectionIdField("news"),
-    defineField({ name: "title", title: "Section title", type: "string" }),
-    defineField({ name: "description", title: "Section description", ...richTextWithLinks }),
-    defineField({
-      name: "articles",
-      title: "Press Articles",
-      type: "array",
-      of: [
-        defineArrayMember({
-          type: "object",
-          fields: [
-            defineField({ name: "title", title: "Title", type: "string", validation: (rule) => rule.required() }),
-            defineField({ name: "source", title: "Source", type: "string" }),
-            defineField({ name: "date", title: "Date", type: "string" }),
-            defineField({ name: "excerpt", title: "Excerpt", type: "text", rows: 3 }),
-            defineField({ name: "href", title: "Article URL", type: "url" }),
-          ],
-        }),
-      ],
-    }),
-  ],
-  preview: {
-    select: { title: "title" },
-    prepare({ title }) {
-      return { title: title?.trim() || "News" };
-    },
-  },
-});
-
-export const partnersSectionType = defineType({
-  name: "partnersSection",
-  title: "Partners",
-  type: "object",
-  fields: [
-    sectionIdField("partners"),
-    defineField({ name: "title", title: "Section title", type: "string" }),
-    defineField({ name: "description", title: "Section description", ...richTextWithLinks }),
-  ],
-  preview: {
-    select: { title: "title" },
-    prepare({ title }) {
-      return { title: title?.trim() || "Partners" };
-    },
-  },
-});
-
 export const instagramSectionType = defineType({
   name: "instagramSection",
   title: "Instagram",
@@ -572,62 +336,228 @@ export const instagramSectionType = defineType({
     sectionIdField("instagram"),
     defineField({ name: "heading", title: "Heading", type: "string" }),
     defineField({ name: "description", title: "Description", ...richTextWithLinks }),
-    defineField({ name: "instagramUrl", title: "Instagram URL", type: "url" }),
+    defineField({
+      name: "instagramUrl",
+      title: "Instagram profile URL",
+      type: "url",
+      description: "Link for the Open Instagram button.",
+    }),
+    defineField({
+      name: "widgetIframeSrc",
+      title: "LightWidget iframe URL",
+      type: "string",
+      description: "Paste the iframe src from lightwidget.com (e.g. https://lightwidget.com/widgets/….html).",
+      validation: (Rule) => Rule.custom((value) => validateLightWidgetIframeSrc(value)),
+    }),
   ],
   preview: {
-    select: { title: "heading" },
-    prepare({ title }) {
-      return { title: title?.trim() || "Instagram" };
+    select: { title: "heading", subtitle: "instagramUrl" },
+    prepare({ title, subtitle }) {
+      return {
+        title: title?.trim() || "Instagram",
+        subtitle: subtitle?.trim() || "Add Instagram URL and LightWidget embed",
+      };
     },
   },
 });
 
-export const pageSectionTypes = [
-  heroSectionType,
-  introSectionType,
-  featureCardsSectionType,
-  profileSectionType,
-  infoCardsSectionType,
-  eventCardsSectionType,
-  newsSectionType,
-  partnersSectionType,
-  instagramSectionType,
-];
+export const pageBlockTypes = [heroSectionType, instagramSectionType];
 
-export const pageSectionMembers = pageSectionTypes.map((sectionType) =>
-  defineArrayMember({ type: sectionType.name })
-);
-
-export const headerLinksField = defineField({
-  name: "headerLinks",
-  title: "Header Links",
-  type: "array",
-  description: "Controls header navigation. Each link can show text or an Iconify icon.",
-  of: [
-    defineArrayMember({
-      type: "object",
-      fields: headerLinkFields,
-      preview: {
-        select: { label: "label", icon: "icon", href: "href" },
-        prepare({ label, icon, href }) {
-          return {
-            title: label || icon || "Header link",
-            subtitle: href,
-          };
-        },
+export const contentSectionType = defineType({
+  name: "contentSection",
+  title: "Section",
+  type: "object",
+  fields: [
+    sectionIdField("section"),
+    defineField({
+      name: "heading",
+      title: "Heading",
+      type: "string",
+      description: "Optional section heading displayed above the layouts.",
+    }),
+    defineField({
+      name: "subheading",
+      title: "Subheading",
+      ...richTextWithLinks,
+      description: "Optional section subheading displayed below the heading.",
+    }),
+    defineField({
+      name: "textAlign",
+      title: "Heading alignment",
+      type: "string",
+      options: {
+        list: [
+          { title: "Left", value: "left" },
+          { title: "Center", value: "center" },
+          { title: "Right", value: "right" },
+        ],
+        layout: "radio",
       },
-      validation: (rule) =>
-        rule.custom((value) => {
-          if (!value || typeof value !== "object") {
-            return true;
-          }
-          const hasLabel = typeof value.label === "string" && value.label.trim().length > 0;
-          const hasIcon = typeof value.icon === "string" && value.icon.trim().length > 0;
-          if (!hasLabel && !hasIcon) {
-            return "Provide either a text label or an Iconify icon name.";
-          }
-          return true;
+      initialValue: "center",
+    }),
+    defineField({
+      name: "theme",
+      title: "Section theme",
+      type: "string",
+      description: "Light sections use dark text; dark sections use light text.",
+      options: {
+        list: [
+          { title: "Light", value: "light" },
+          { title: "Dark", value: "dark" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "light",
+    }),
+    defineField({
+      name: "backgroundColor",
+      title: "Background color",
+      type: "color",
+      description:
+        "Optional solid background. Spans the full page width. Shows behind a background image when both are set.",
+      options: {
+        disableAlpha: false,
+        colorList: ["#ffffff", "#18181b", "#fafafa", "#09090b", "#000000"],
+      },
+    }),
+    defineField({
+      name: "backgroundImage",
+      title: "Background image",
+      type: "object",
+      description: "Optional full-bleed background image behind the section content.",
+      fields: [
+        defineField({
+          name: "imageAsset",
+          title: "Uploaded image",
+          type: "image",
+          options: { hotspot: true },
         }),
+        defineField({
+          name: "src",
+          title: "Fallback image path or URL",
+          type: "string",
+          description: "Optional fallback if no upload is set.",
+        }),
+        defineField({
+          name: "alt",
+          title: "Alt text",
+          type: "string",
+          description: "Describe the image for accessibility. Decorative images can use a short label.",
+        }),
+      ],
+      preview: imageWithAltPreview,
+    }),
+    imageOverlayField({
+      initialType: "none",
+      title: "Background overlay",
+    }),
+    defineField({
+      name: "spacing",
+      title: "Vertical spacing",
+      type: "string",
+      description: "Space above and below the section content.",
+      options: {
+        list: [
+          { title: "None", value: "none" },
+          { title: "Tight", value: "tight" },
+          { title: "Compact", value: "compact" },
+          { title: "Default", value: "default" },
+          { title: "Comfortable", value: "comfortable" },
+          { title: "Loose", value: "loose" },
+          { title: "Spacious", value: "spacious" },
+        ],
+        layout: "radio",
+      },
+      initialValue: "default",
+    }),
+    defineField({
+      name: "border",
+      title: "Border",
+      type: "object",
+      description: "Optional top and/or bottom border for the section.",
+      fields: [
+        defineField({
+          name: "position",
+          title: "Position",
+          type: "string",
+          options: {
+            list: [
+              { title: "None", value: "none" },
+              { title: "Top", value: "top" },
+              { title: "Bottom", value: "bottom" },
+              { title: "Top and bottom", value: "both" },
+            ],
+            layout: "radio",
+          },
+          initialValue: "none",
+        }),
+        defineField({
+          name: "width",
+          title: "Size",
+          type: "string",
+          options: {
+            list: [
+              { title: "Hairline (1px)", value: "hairline" },
+              { title: "Thin (2px)", value: "thin" },
+              { title: "Medium (3px)", value: "medium" },
+              { title: "Thick (4px)", value: "thick" },
+              { title: "Heavy (6px)", value: "heavy" },
+            ],
+            layout: "radio",
+          },
+          initialValue: "thin",
+          hidden: ({ parent }) => !parent?.position || parent.position === "none",
+        }),
+        defineField({
+          name: "color",
+          title: "Color",
+          type: "color",
+          description: "Defaults to the theme border color when empty.",
+          options: {
+            disableAlpha: false,
+            colorList: ["#e4e4e7", "#18181b", "#ffffff", "#000000"],
+          },
+          hidden: ({ parent }) => !parent?.position || parent.position === "none",
+        }),
+      ],
+    }),
+    defineField({
+      name: "layouts",
+      title: "Column layouts",
+      type: "array",
+      description:
+        "Add single-, two-, three-column, or grid layouts. Each column holds one component (card, image, or rich text).",
+      of: [defineArrayMember({ type: columnLayoutType.name })],
+    }),
+    defineField({
+      name: "outro",
+      title: "Outro",
+      ...richTextWithLinks,
+      description: "Optional paragraph shown below the column layouts.",
     }),
   ],
+  preview: {
+    select: {
+      heading: "heading",
+      layouts: "layouts",
+    },
+    prepare({ heading, layouts }: { heading?: string; layouts?: { variant?: string }[] }) {
+      const layoutCount = layouts?.length ?? 0;
+      const first = layouts?.[0]?.variant;
+      const labels: Record<string, string> = {
+        singleColumn: "1-col",
+        twoColumn: "2-col",
+        threeColumn: "3-col",
+        grid: "grid",
+      };
+      return {
+        title: heading?.trim() || "Section",
+        subtitle: layoutCount
+          ? `${layoutCount} layout${layoutCount === 1 ? "" : "s"}${first ? ` · ${labels[first] || first}` : ""}`
+          : "No layouts",
+      };
+    },
+  },
 });
+
+export const contentSectionMembers = [defineArrayMember({ type: contentSectionType.name })];

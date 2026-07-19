@@ -1,5 +1,12 @@
-import { heroSlides, type HeroSlide, type RichTextContent } from "@/lib/site";
+import type { RichTextContent } from "@/lib/richText";
+import { sanitizeHref } from "@/lib/href";
+import { stegaClean } from "next-sanity";
 import type { CSSProperties } from "react";
+
+export type HeroSlide = {
+  src: string;
+  alt: string;
+};
 
 export type HeroDisplayMode = "static" | "carousel";
 
@@ -116,9 +123,10 @@ export const heroContentWidthClasses: Record<HeroContentWidth, string> = {
   full: "w-full",
 };
 
+/** Structural defaults only — images and copy come from CMS. */
 export const defaultHeroConfig: HeroConfig = {
   displayMode: "carousel",
-  images: [...heroSlides],
+  images: [],
   height: "cinematic",
   showHeroText: false,
   textAlign: "center",
@@ -212,7 +220,25 @@ function normalizeCustomGradient(
 }
 
 function pickEnum<T extends string>(value: unknown, allowed: Set<T>, fallback: T): T {
-  return typeof value === "string" && allowed.has(value as T) ? (value as T) : fallback;
+  if (typeof value !== "string") {
+    return fallback;
+  }
+  const cleaned = stegaClean(value).trim() as T;
+  return allowed.has(cleaned) ? cleaned : fallback;
+}
+
+/** Normalize Sanity overlay objects (hero + page sections). */
+export function normalizeHeroOverlay(
+  incoming:
+    | (Partial<HeroOverlay> & {
+        gradientMode?: HeroGradientMode;
+        gradientAngle?: number;
+        gradientStops?: IncomingGradientStop[];
+      })
+    | undefined,
+  defaults: HeroOverlay = { type: "none" }
+): HeroOverlay {
+  return normalizeOverlay(incoming, defaults);
 }
 
 function normalizeImages(incoming: HeroImage[] | undefined, defaults: HeroImage[]): HeroImage[] {
@@ -282,7 +308,7 @@ function normalizeCta(incoming: Partial<HeroCta> | undefined | null): HeroCta | 
   }
 
   const label = incoming.label?.trim();
-  const href = incoming.href?.trim();
+  const href = sanitizeHref(incoming.href);
   if (!label || !href) {
     return undefined;
   }

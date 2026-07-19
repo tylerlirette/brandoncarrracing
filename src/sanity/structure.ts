@@ -6,9 +6,21 @@ export const structure: StructureResolver = (S) =>
     .title("Content")
     .items([
       S.listItem()
+        .title("Site Settings")
+        .id("siteSettingsSingleton")
+        .child(S.document().schemaType("siteSettings").documentId("siteSettings")),
+      S.listItem()
         .title("Global Styles")
         .id("globalStylesSingleton")
         .child(S.document().schemaType("globalStyles").documentId("globalStyles")),
+      S.listItem()
+        .title("Site Header")
+        .id("siteHeaderSingleton")
+        .child(S.document().schemaType("siteHeader").documentId("siteHeader")),
+      S.listItem()
+        .title("Site Footer")
+        .id("siteFooterSingleton")
+        .child(S.document().schemaType("siteFooter").documentId("siteFooter")),
       S.listItem()
         .title("Home Page")
         .id("pageHomeSingleton")
@@ -26,6 +38,9 @@ export const structure: StructureResolver = (S) =>
         .id("newsletterLeads")
         .child(S.documentTypeList("newsletterLead").title("Newsletter Leads")),
       ...S.documentTypeListItems().filter(
-        (item) => !["globalStyles", "page", "newsletterLead"].includes(item.getId() || "")
+        (item) =>
+          !["siteSettings", "globalStyles", "siteHeader", "siteFooter", "page", "newsletterLead"].includes(
+            item.getId() || ""
+          )
       ),
     ]);

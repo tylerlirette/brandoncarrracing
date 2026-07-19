@@ -21,6 +21,30 @@ export const TYPE_SCALE_OPTIONS = [
   { title: "Large", value: "large" },
 ] as const;
 
+export const HEADING_TEXT_TRANSFORM_OPTIONS = [
+  { title: "Uppercase", value: "uppercase" },
+  { title: "None (as typed)", value: "none" },
+] as const;
+
+export const HEADING_FONT_STYLE_OPTIONS = [
+  { title: "Italic", value: "italic" },
+  { title: "Normal", value: "normal" },
+] as const;
+
+export const HEADING_FONT_WEIGHT_OPTIONS = [
+  { title: "Medium (500)", value: "500" },
+  { title: "Semibold (600)", value: "600" },
+  { title: "Bold (700)", value: "700" },
+  { title: "Extra bold (800)", value: "800" },
+] as const;
+
+export const ROUNDEDNESS_OPTIONS = [
+  { title: "None", value: "none" },
+  { title: "Subtle", value: "subtle" },
+  { title: "Soft", value: "soft" },
+  { title: "Full", value: "full" },
+] as const;
+
 /** Validates and normalizes a Google Fonts stylesheet URL pasted from embed code. */
 export function parseGoogleFontsStylesheetUrl(input: string | undefined): string | undefined {
   if (!input?.trim()) {

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { RichText } from "@/components/content/RichText";
 import {
@@ -9,7 +9,8 @@ import {
   normalizeHeroConfig,
   type HeroConfig,
 } from "@/lib/hero";
-import { heroStyles } from "@/lib/theme";
+import { isExternalHref } from "@/lib/href";
+import { heroStyles, radiusStyles } from "@/lib/theme";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -40,7 +41,7 @@ function HeroContent({ config }: { config: HeroConfig }) {
   const styleClasses = {
     default: "",
     minimal: "",
-    boxed: "rounded-sm bg-black/50 p-6 backdrop-blur-sm md:p-8",
+    boxed: `${radiusStyles.card} bg-black/50 p-6 backdrop-blur-sm md:p-8`,
     "brand-accent": "",
   }[config.textStyle];
 
@@ -62,9 +63,9 @@ function HeroContent({ config }: { config: HeroConfig }) {
 
 function HeroCtaButton({ cta }: { cta: NonNullable<HeroConfig["cta"]> }) {
   const className = heroStyles.cta;
-  const isExternal = cta.href.startsWith("http") || cta.openInNewTab;
+  const external = isExternalHref(cta.href) || cta.openInNewTab;
 
-  if (isExternal) {
+  if (external) {
     return (
       <a href={cta.href} target="_blank" rel="noopener noreferrer" className={className}>
         {cta.label}
@@ -149,7 +150,7 @@ function HeroCarouselDots({
           type="button"
           aria-label={`Show slide ${index + 1}`}
           onClick={() => onSelect(index)}
-          className={`h-2.5 w-2.5 rounded-full border border-white/70 transition hover:cursor-pointer ${
+          className={`h-2.5 w-2.5 rounded-full border border-white/70 transition cursor-pointer ${
             index === activeIndex ? "scale-110 bg-brand" : "bg-white/40 hover:bg-white/70"
           }`}
         />
@@ -161,6 +162,8 @@ function HeroCarouselDots({
 export function Hero({ config: configInput }: HeroProps) {
   const config = normalizeHeroConfig(configInput, defaultHeroConfig);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const [paused, setPaused] = useState(false);
 
   const next = useCallback(() => {
     setActiveIndex((current) => {
@@ -170,13 +173,33 @@ export function Hero({ config: configInput }: HeroProps) {
   }, [config.images.length]);
 
   useEffect(() => {
-    if (config.displayMode !== "carousel" || config.images.length <= 1) {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReduceMotion(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (
+      reduceMotion ||
+      paused ||
+      config.displayMode !== "carousel" ||
+      config.images.length <= 1
+    ) {
       return;
     }
 
     const id = window.setInterval(next, config.carouselIntervalMs);
     return () => window.clearInterval(id);
-  }, [config.carouselIntervalMs, config.displayMode, config.images.length, next]);
+  }, [
+    config.carouselIntervalMs,
+    config.displayMode,
+    config.images.length,
+    next,
+    paused,
+    reduceMotion,
+  ]);
 
   const slideIndex = config.images.length ? activeIndex % config.images.length : 0;
 
@@ -197,7 +220,18 @@ export function Hero({ config: configInput }: HeroProps) {
         : "pb-10 md:pb-14";
 
   return (
-    <section className={`relative w-full overflow-hidden bg-black ${heroHeightClasses[config.height]}`} aria-label="Hero">
+    <section
+      className={`relative w-full overflow-hidden bg-black ${heroHeightClasses[config.height]}`}
+      aria-label="Hero"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setPaused(false);
+        }
+      }}
+    >
       <div className="absolute inset-0">
         <HeroMedia images={config.images} displayMode={config.displayMode} activeIndex={slideIndex} />
       </div>
